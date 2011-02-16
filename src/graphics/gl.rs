@@ -1,3 +1,4 @@
+use std::marker::PhantomData;
 use std::mem;
 use std::os::raw::c_void;
 
@@ -14,14 +15,14 @@ pub enum ArrayComponentDataType {
 
 
 #[derive(Debug)]
-pub struct Buffer(gl::types::GLuint);
+pub struct Buffer<T>(gl::types::GLuint, PhantomData<T>);
 
-impl Buffer {
+impl<T> Buffer<T> {
     pub fn new() -> Self {
         unsafe {
             let mut handle = mem::uninitialized();
-            gl::GenBuffers(1, &mut handle);
-            Buffer(handle)
+            gl::CreateBuffers(1, &mut handle);
+            Buffer(handle, PhantomData)
         }
     }
 
@@ -30,7 +31,7 @@ impl Buffer {
     }
 }
 
-impl Drop for Buffer {
+impl<T> Drop for Buffer<T> {
     fn drop(&mut self) {
         unsafe {
             gl::DeleteBuffers(1, &self.0);
@@ -38,8 +39,8 @@ impl Drop for Buffer {
     }
 }
 
-impl !Sync for Buffer { }
-impl !Send for Buffer { }
+impl<T> !Sync for Buffer<T> { }
+impl<T> !Send for Buffer<T> { }
 
 
 
@@ -76,6 +77,7 @@ pub enum IndexDataType {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum PrimitiveType {
     Triangles = gl::TRIANGLES as isize,
+    TriangleFan = gl::TRIANGLE_FAN as isize,
 }
 
 
@@ -239,6 +241,14 @@ pub trait Uniform {
     fn uniform(self, location: usize);
 }
 
+impl Uniform for cgmath::Vector2<i32> {
+    fn uniform(self, location: usize) {
+        unsafe {
+            gl::Uniform2i(location as gl::types::GLint, self.x, self.y);
+        }
+    }
+}
+
 impl Uniform for cgmath::Matrix4<f32> {
     fn uniform(self, location: usize) {
         unsafe {
@@ -259,7 +269,7 @@ pub fn attach_shader(program: &Program, shader: &Shader) {
     }
 }
 
-pub fn bind_buffer(target: BufferBindingTarget, buffer: &Buffer) {
+pub fn bind_buffer<T>(target: BufferBindingTarget, buffer: &Buffer<T>) {
     unsafe {
         gl::BindBuffer(target as gl::types::GLenum, buffer.handle());
     }
@@ -271,20 +281,30 @@ pub fn bind_vertex_array(vertex_array: &VertexArray) {
     }
 }
 
-pub fn buffer_data<T>(target: BufferBindingTarget, data: &[T], usage: DataStoreUsage)
+pub fn named_buffer_data<T>(buffer: &Buffer<T>, data: &[T], usage: DataStoreUsage)
     where T: BufferData {
     unsafe {
         let data_size = (mem::size_of::<T>() * data.len()) as isize;
         let data_ptr = data.as_ptr() as *const c_void;
-        gl::BufferData(target as gl::types::GLenum,
-                       data_size, data_ptr,
-                       usage as gl::types::GLenum);
+        gl::NamedBufferData(buffer.handle(),
+                            data_size, data_ptr,
+                            usage as gl::types::GLenum);
     }
 }
 
 pub fn compile_shader(shader: &Shader) {
     unsafe {
         gl::CompileShader(shader.handle());
+    }
+}
+
+pub fn draw_arrays_instanced(mode: PrimitiveType, index_count: usize,
+                             primitive_count: usize) {
+    unsafe {
+        gl::DrawArraysInstanced(mode as gl::types::GLenum,
+                                0 as gl::types::GLint,
+                                index_count as gl::types::GLsizei,
+                                primitive_count as gl::types::GLsizei);
     }
 }
 
@@ -304,8 +324,7 @@ pub fn draw_elements<I>(mode: PrimitiveType, index_count: usize)
     }
 }
 
-pub fn draw_elements_instanced<I>(mode: PrimitiveType,
-                                  index_count: usize,
+pub fn draw_elements_instanced<I>(mode: PrimitiveType, index_count: usize,
                                   primitive_count: usize)
     where I: IndexData {
     unsafe {

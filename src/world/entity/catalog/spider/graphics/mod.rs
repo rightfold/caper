@@ -1,4 +1,4 @@
-use cgmath::{Matrix4, Vector2, Vector3};
+use cgmath::{Matrix4, Rad, Vector2, Vector3};
 
 use graphics::gl;
 use graphics::obj::Obj;
@@ -7,11 +7,11 @@ use world::entity::catalog::spider::SpiderSet;
 pub struct DrawState {
     program: gl::Program,
     vertex_array: gl::VertexArray,
-    _vertex_buffer: gl::Buffer,
+    _vertex_position_buffer: gl::Buffer<Vector3<f32>>,
     vertex_index_count: usize,
-    vertex_index_buffer: gl::Buffer,
-    positions_buffer: gl::Buffer,
-    angles_buffer: gl::Buffer,
+    vertex_index_buffer: gl::Buffer<u32>,
+    model_position_buffer: gl::Buffer<Vector2<f32>>,
+    model_angle_buffer: gl::Buffer<Rad<f32>>,
 }
 
 impl DrawState {
@@ -20,43 +20,41 @@ impl DrawState {
 
         let program = Self::new_program();
 
-        let vertex_buffer = gl::Buffer::new();
-        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer, &vertex_buffer);
-        gl::buffer_data(gl::BufferBindingTarget::ArrayBuffer, &model.vertices,
-                        gl::DataStoreUsage::StaticDraw);
+        let vertex_position_buffer = gl::Buffer::new();
+        gl::named_buffer_data(&vertex_position_buffer, &model.vertex_positions,
+                              gl::DataStoreUsage::StaticDraw);
 
-        let vertex_index_count = model.indices.len();
+        let vertex_index_count = model.vertex_indices.len();
         let vertex_index_buffer = gl::Buffer::new();
-        gl::bind_buffer(gl::BufferBindingTarget::ElementArrayBuffer,
-                        &vertex_index_buffer);
-        gl::buffer_data(gl::BufferBindingTarget::ElementArrayBuffer,
-                        &model.indices, gl::DataStoreUsage::StaticDraw);
+        gl::named_buffer_data(&vertex_index_buffer, &model.vertex_indices,
+                              gl::DataStoreUsage::StaticDraw);
 
-        let positions_buffer = gl::Buffer::new();
+        let model_position_buffer = gl::Buffer::new();
 
-        let angles_buffer = gl::Buffer::new();
+        let model_angle_buffer = gl::Buffer::new();
 
         let vertex_array = gl::VertexArray::new();
 
         gl::bind_vertex_array(&vertex_array);
 
         gl::enable_vertex_attrib_array(0);
-        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer, &vertex_buffer);
+        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer, &vertex_position_buffer);
         gl::vertex_attrib_pointer::<Vector3<f32>>(0, false);
 
         gl::enable_vertex_attrib_array(1);
-        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer, &positions_buffer);
+        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer, &model_position_buffer);
         gl::vertex_attrib_pointer::<Vector2<f32>>(1, false);
         gl::vertex_attrib_divisor(1, 1);
 
         gl::enable_vertex_attrib_array(2);
-        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer, &angles_buffer);
+        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer, &model_angle_buffer);
         gl::vertex_attrib_pointer::<f32>(2, false);
         gl::vertex_attrib_divisor(2, 1);
 
-        DrawState{program, vertex_array, _vertex_buffer: vertex_buffer,
-                  vertex_index_count, vertex_index_buffer, positions_buffer,
-                  angles_buffer}
+        DrawState{program, vertex_array,
+                  _vertex_position_buffer: vertex_position_buffer,
+                  vertex_index_count, vertex_index_buffer, model_position_buffer,
+                  model_angle_buffer}
     }
 
     fn new_program() -> gl::Program {
@@ -79,15 +77,11 @@ impl DrawState {
     pub fn draw(&self, world_transform: Matrix4<f32>, spiders: &SpiderSet) {
         gl::bind_vertex_array(&self.vertex_array);
 
-        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer,
-                        &self.positions_buffer);
-        gl::buffer_data(gl::BufferBindingTarget::ArrayBuffer,
-                        spiders.positions(), gl::DataStoreUsage::StreamDraw);
+        gl::named_buffer_data(&self.model_position_buffer, spiders.positions(),
+                              gl::DataStoreUsage::StreamDraw);
 
-        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer,
-                        &self.angles_buffer);
-        gl::buffer_data(gl::BufferBindingTarget::ArrayBuffer,
-                        spiders.angles(), gl::DataStoreUsage::StreamDraw);
+        gl::named_buffer_data(&self.model_angle_buffer, spiders.angles(),
+                              gl::DataStoreUsage::StreamDraw);
 
         gl::bind_buffer(gl::BufferBindingTarget::ElementArrayBuffer,
                         &self.vertex_index_buffer);

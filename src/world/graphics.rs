@@ -1,8 +1,10 @@
 use cgmath::{EuclideanSpace, Matrix4, Point3, Vector3};
 
-use world::{World, entity};
+use world::{World, entity, map};
 
 pub struct DrawState {
+    map: map::graphics::DrawState,
+
     player: entity::catalog::player::graphics::DrawState,
 
     spiders: entity::catalog::spider::graphics::DrawState,
@@ -11,6 +13,8 @@ pub struct DrawState {
 impl DrawState {
     pub fn new() -> Self {
         DrawState{
+            map: map::graphics::DrawState::new(),
+
             player: entity::catalog::player::graphics::DrawState::new(),
 
             spiders: entity::catalog::spider::graphics::DrawState::new(),
@@ -24,6 +28,8 @@ impl DrawState {
             Vector3::new(0.0, 0.0, 1.0),
         );
         let world_transform = projection_transform * view_transform;
+
+        self.map.draw(world_transform, &world.map);
 
         self.player.draw(world_transform, &world.player);
 
