@@ -1,3 +1,7 @@
 [package]
 name = "caper"
 version = "0.0.0"
+
+[dependencies]
+cgmath = "0.15.0"
+rand = "0.3.17"
