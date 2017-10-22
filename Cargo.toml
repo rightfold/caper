@@ -1,7 +1,15 @@
 [package]
 name = "caper"
 version = "0.0.0"
+build = "build.rs"
+
+[[bin]]
+name = "caper"
+doc = false
 
 [dependencies]
 cgmath = "0.15.0"
+gfx = "0.16.1"
+gfx_window_glutin = "0.18.0"
+glutin = "0.10.0"
 rand = "0.3.17"

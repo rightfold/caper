@@ -8,6 +8,14 @@ pub struct Map {
     pub chunks: HashMap<(isize, isize), Chunk>,
 }
 
+impl Map {
+    pub fn new() -> Self {
+        Map{
+            chunks: HashMap::new(),
+        }
+    }
+}
+
 pub struct Chunk {
     pub tiles: [Tile; CHUNK_SIZE * CHUNK_SIZE],
 }
