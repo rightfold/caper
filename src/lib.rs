@@ -1,6 +1,7 @@
-#[macro_use] extern crate gfx;
+#![feature(optin_builtin_traits)]
 
 extern crate cgmath;
+extern crate gl;
 extern crate rand;
 
 #[macro_use] mod macros;

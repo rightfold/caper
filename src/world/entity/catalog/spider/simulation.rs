@@ -1,7 +1,7 @@
 use cgmath::{Rad, Vector2};
 use rand::Rng;
 
-use world::entity::spider::*;
+use world::entity::catalog::spider::*;
 
 pub fn simulate_one<R: Rng>(position: &mut Vector2<f32>, angle: &mut Rad<f32>, state: &mut SpiderState, rng: &mut R) {
     // TODO(rightfold): Update rotation state.

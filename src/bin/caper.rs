@@ -1,20 +1,28 @@
 extern crate cgmath;
-extern crate gfx;
-extern crate gfx_window_glutin;
+extern crate gl;
 extern crate glutin;
 extern crate rand;
 
 extern crate caper;
 
-use cgmath::{Deg, Vector2};
-use gfx::Device;
-use glutin::{ContextBuilder, Event, EventsLoop, GlContext, WindowBuilder, WindowEvent};
-use rand::StdRng;
+use std::os::raw::c_void;
+use std::ptr;
+use std::slice;
+use std::str;
 
-use caper::world;
+use glutin::{ContextBuilder, Event, EventsLoop, GlContext, GlWindow, WindowBuilder, WindowEvent};
 
-type ColorFormat = gfx::format::Rgba8;
-type DepthFormat = gfx::format::DepthStencil;
+extern "system" fn log(_source: gl::types::GLenum,
+                       _type: gl::types::GLenum,
+                       _id: gl::types::GLuint,
+                       _severity: gl::types::GLenum,
+                       length: gl::types::GLsizei,
+                       message: *const gl::types::GLchar,
+                       _user_param: *mut c_void) {
+    let slice = unsafe { slice::from_raw_parts(message as *const u8, length as usize) };
+    let string = str::from_utf8(slice);
+    println!("{:?}", string);
+}
 
 fn main() {
     let mut events_loop = EventsLoop::new();
@@ -23,24 +31,35 @@ fn main() {
         .with_dimensions(768, 768);
     let context_builder = ContextBuilder::new()
         .with_vsync(true);
-    let (window, mut device, mut factory, mut main_color, mut main_depth) =
-        gfx_window_glutin::init::<ColorFormat, DepthFormat>(window_builder, context_builder, &events_loop);
+    let window = GlWindow::new(window_builder, context_builder, &events_loop)
+        .unwrap();
 
-    let mut encoder: gfx::Encoder<_, _> = factory.create_command_buffer().into();
+    unsafe {
+        gl::load_with(|symbol| window.get_proc_address(symbol) as *const c_void);
+        window.make_current().unwrap();
+        gl::Enable(gl::DEPTH_TEST);
+    }
 
-    let mut rng = StdRng::new().unwrap();
-    let mut world = world::World::new(Vector2::new(0.0, 0.0));
-    world.entities.spiders.spawn(&mut rng, Vector2::new(-0.5, -0.5));
-    world.entities.spiders.spawn(&mut rng, Vector2::new( 0.5,  0.5));
-
-    let mut world_draw_state = world::graphics::DrawState::new(&mut factory, main_color.clone(), main_depth.clone()).unwrap();
+    unsafe {
+        gl::DebugMessageCallback(log, ptr::null());
+    }
 
     let projection_transform = cgmath::perspective(
-        Deg(45.0),
+        cgmath::Deg(45.0),
         768.0 / 768.0,
         0.1,
         100.0,
     );
+
+    let mut rng = rand::StdRng::new().unwrap();
+
+    let mut world = caper::world::World::new(cgmath::Vector2::new(0.0, 0.0));
+    world.spiders.spawn(&mut rng, cgmath::Vector2::new( 0.0,  0.0));
+    world.spiders.spawn(&mut rng, cgmath::Vector2::new( 1.0,  1.0));
+    world.spiders.spawn(&mut rng, cgmath::Vector2::new( 2.0,  2.0));
+    world.spiders.spawn(&mut rng, cgmath::Vector2::new( 3.0,  3.0));
+
+    let draw_state = caper::world::graphics::DrawState::new();
 
     let mut running = true;
     while running {
@@ -50,33 +69,22 @@ fn main() {
                     println!("{:?}", event);
                     running = false;
                 },
-                Event::WindowEvent{event: WindowEvent::Resized(_, _), ..} => {
+                Event::WindowEvent{event: WindowEvent::Resized(w, h), ..} => {
                     println!("{:?}", event);
-                    gfx_window_glutin::update_views(&window, &mut main_color, &mut main_depth);
-                    world_draw_state = world::graphics::DrawState::new(&mut factory, main_color.clone(), main_depth.clone()).unwrap();
-                },
-                Event::WindowEvent{event: WindowEvent::KeyboardInput{input, ..}, ..} => {
-                    let player_movement = match input.scancode {
-                        0x11 => Vector2::new( 0.0,  1.0), // W
-                        0x1F => Vector2::new( 0.0, -1.0), // S
-                        0x1E => Vector2::new(-1.0,  0.0), // A
-                        0x20 => Vector2::new( 1.0,  0.0), // D
-                        _ => Vector2::new(0.0, 0.0),
-                    };
-                    world.entities.player.position += player_movement / 10.0;
+                    window.resize(w, h);
                 },
                 _ => (),
             }
         });
 
+        unsafe {
+            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
+        }
+
         world.simulate(&mut rng);
 
-        encoder.clear(&main_color, [1.0, 1.0, 1.0, 1.0]);
-        encoder.clear_depth(&main_depth, 1.0);
-        world_draw_state.draw(&mut encoder, projection_transform, &world).unwrap();
-        encoder.flush(&mut device);
+        draw_state.draw(projection_transform, &world);
 
         window.swap_buffers().unwrap();
-        device.cleanup();
     }
 }
