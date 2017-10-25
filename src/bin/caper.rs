@@ -72,6 +72,12 @@ fn main() {
                 Event::WindowEvent{event: WindowEvent::Resized(w, h), ..} => {
                     println!("{:?}", event);
                     window.resize(w, h);
+                    unsafe {
+                        gl::Viewport(0 as gl::types::GLint,
+                                     0 as gl::types::GLint,
+                                     w as gl::types::GLsizei,
+                                     h as gl::types::GLsizei);
+                    }
                 },
                 _ => (),
             }
