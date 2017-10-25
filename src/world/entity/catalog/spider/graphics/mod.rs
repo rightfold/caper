@@ -16,7 +16,7 @@ pub struct DrawState {
 
 impl DrawState {
     pub fn new() -> Self {
-        let model: Obj<Vector3<f32>> = Obj::read(include_str!(concat!(env!("OUT_DIR"), "/world/entity/catalog/spider/graphics/body.obj"))).unwrap();
+        let model: Obj<Vector3<f32>> = Obj::read(include_str!(concat!(env!("OUT_DIR"), "/world/entity/catalog/spider/graphics/spider.obj"))).unwrap();
 
         let program = Self::new_program();
 
@@ -25,6 +25,7 @@ impl DrawState {
         gl::buffer_data(gl::BufferBindingTarget::ArrayBuffer, &model.vertices,
                         gl::DataStoreUsage::StaticDraw);
 
+        let vertex_index_count = model.indices.len();
         let vertex_index_buffer = gl::Buffer::new();
         gl::bind_buffer(gl::BufferBindingTarget::ElementArrayBuffer,
                         &vertex_index_buffer);
@@ -42,7 +43,6 @@ impl DrawState {
         gl::enable_vertex_attrib_array(0);
         gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer, &vertex_buffer);
         gl::vertex_attrib_pointer::<Vector3<f32>>(0, false);
-        gl::vertex_attrib_divisor(0, 0);
 
         gl::enable_vertex_attrib_array(1);
         gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer, &positions_buffer);
@@ -55,8 +55,8 @@ impl DrawState {
         gl::vertex_attrib_divisor(2, 1);
 
         DrawState{program, vertex_array, _vertex_buffer: vertex_buffer,
-                  vertex_index_count: model.indices.len(), vertex_index_buffer,
-                  positions_buffer, angles_buffer}
+                  vertex_index_count, vertex_index_buffer, positions_buffer,
+                  angles_buffer}
     }
 
     fn new_program() -> gl::Program {
@@ -77,8 +77,6 @@ impl DrawState {
     }
 
     pub fn draw(&self, world_transform: Matrix4<f32>, spiders: &SpiderSet) {
-        let _ = world_transform;
-
         gl::bind_vertex_array(&self.vertex_array);
 
         gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer,

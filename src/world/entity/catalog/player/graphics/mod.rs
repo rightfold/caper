@@ -1,17 +1,80 @@
-use cgmath::Matrix4;
+use cgmath::{Matrix4, Vector3};
 
+use graphics::gl;
+use graphics::obj::Obj;
 use world::entity::catalog::player::Player;
 
 pub struct DrawState {
+    program: gl::Program,
+    vertex_array: gl::VertexArray,
+    _vertex_buffer: gl::Buffer,
+    vertex_index_count: usize,
+    vertex_index_buffer: gl::Buffer,
 }
 
 impl DrawState {
     pub fn new() -> Self {
-        DrawState{}
+        let model: Obj<Vector3<f32>> = Obj::read(include_str!(concat!(env!("OUT_DIR"), "/world/entity/catalog/player/graphics/player.obj"))).unwrap();
+
+        let program = Self::new_program();
+
+        let vertex_buffer = gl::Buffer::new();
+        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer, &vertex_buffer);
+        gl::buffer_data(gl::BufferBindingTarget::ArrayBuffer, &model.vertices,
+                        gl::DataStoreUsage::StaticDraw);
+
+        let vertex_index_count = model.indices.len();
+        let vertex_index_buffer = gl::Buffer::new();
+        gl::bind_buffer(gl::BufferBindingTarget::ElementArrayBuffer,
+                        &vertex_index_buffer);
+        gl::buffer_data(gl::BufferBindingTarget::ElementArrayBuffer,
+                        &model.indices, gl::DataStoreUsage::StaticDraw);
+
+        let vertex_array = gl::VertexArray::new();
+
+        gl::bind_vertex_array(&vertex_array);
+
+        gl::enable_vertex_attrib_array(0);
+        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer, &vertex_buffer);
+        gl::vertex_attrib_pointer::<Vector3<f32>>(0, false);
+
+        DrawState{program, vertex_array, _vertex_buffer: vertex_buffer,
+                  vertex_index_count, vertex_index_buffer}
+    }
+
+    fn new_program() -> gl::Program {
+        let vertex_shader = gl::Shader::new(gl::ShaderType::VertexShader);
+        gl::shader_source(&vertex_shader, &[&include_bytes!("player.vert")[..]]);
+        gl::compile_shader(&vertex_shader);
+
+        let fragment_shader = gl::Shader::new(gl::ShaderType::FragmentShader);
+        gl::shader_source(&fragment_shader, &[&include_bytes!("player.frag")[..]]);
+        gl::compile_shader(&fragment_shader);
+
+        let program = gl::Program::new();
+        gl::attach_shader(&program, &vertex_shader);
+        gl::attach_shader(&program, &fragment_shader);
+        gl::link_program(&program);
+
+        program
     }
 
     pub fn draw(&self, world_transform: Matrix4<f32>, player: &Player) {
-        let _ = world_transform;
-        let _ = player;
+        let model_transform = Matrix4::from_translation(player.position.extend(0.0));
+        let world_model_transform = world_transform * model_transform;
+
+        gl::bind_vertex_array(&self.vertex_array);
+
+        gl::bind_buffer(gl::BufferBindingTarget::ElementArrayBuffer,
+                        &self.vertex_index_buffer);
+
+        gl::draw_buffer(gl::ColorBuffer::Back);
+
+        gl::use_program(&self.program);
+
+        gl::uniform(0, world_model_transform);
+
+        gl::draw_elements::<u32>(gl::PrimitiveType::Triangles,
+                                 self.vertex_index_count);
     }
 }

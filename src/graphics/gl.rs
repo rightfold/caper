@@ -294,6 +294,16 @@ pub fn draw_buffer(color_buffer: ColorBuffer) {
     }
 }
 
+pub fn draw_elements<I>(mode: PrimitiveType, index_count: usize)
+    where I: IndexData {
+    unsafe {
+        gl::DrawElements(mode as gl::types::GLenum,
+                         index_count as gl::types::GLsizei,
+                         I::index_data_type() as gl::types::GLenum,
+                         0 as *const c_void);
+    }
+}
+
 pub fn draw_elements_instanced<I>(mode: PrimitiveType,
                                   index_count: usize,
                                   primitive_count: usize)
