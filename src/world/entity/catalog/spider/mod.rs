@@ -1,14 +1,10 @@
 use cgmath::{Deg, Rad, Vector2};
-use rand::Rng;
+use rand::{Rand, Rng};
 
 use chance::gen_range_base;
 
 pub const INITIAL_HEALTH_BASE: i16 = 20;
 pub const INITIAL_HEALTH_CHANCE: (i16, i16) = (-5, 5);
-
-pub const STATE_CHANGE_CHANCE: u32 = 120;
-
-pub const ROTATION_SPEED: Deg<f32> = Deg(0.1);
 
 entity_set!(
     SpiderSet,
@@ -41,6 +37,16 @@ pub enum RotationState {
     Zero,
     Clockwise,
     Counterclockwise,
+}
+
+impl Rand for RotationState {
+    fn rand<R: Rng>(rng: &mut R) -> Self {
+        match rng.gen_range(0, 3) {
+            0 => RotationState::Zero,
+            1 => RotationState::Clockwise,
+            _ => RotationState::Counterclockwise,
+        }
+    }
 }
 
 impl SpiderSet {
