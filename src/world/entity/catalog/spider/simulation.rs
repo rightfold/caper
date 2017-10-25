@@ -29,7 +29,7 @@ fn simulate_position(_dt: f32, position: Vector2<f32>, state: SpiderState) -> Ve
 fn simulate_angle(dt: f32, angle: Rad<f32>, rotation_state: RotationState) -> Rad<f32> {
     match rotation_state {
         RotationState::Zero => angle,
-        RotationState::Clockwise => angle + Rad::from(ROTATION_SPEED * dt),
-        RotationState::Counterclockwise => angle - Rad::from(ROTATION_SPEED * dt),
+        RotationState::Clockwise => angle - Rad::from(ROTATION_SPEED * dt),
+        RotationState::Counterclockwise => angle + Rad::from(ROTATION_SPEED * dt),
     }
 }
