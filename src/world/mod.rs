@@ -29,8 +29,8 @@ impl World {
         self.player.position
     }
 
-    pub fn simulate<R: Rng>(&mut self, rng: &mut R) {
-        self.spiders.simulate(rng);
+    pub fn simulate<R: Rng>(&mut self, rng: &mut R, dt: f32) {
+        self.spiders.simulate(rng, dt);
     }
 }
 

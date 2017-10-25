@@ -54,12 +54,12 @@ impl SpiderSet {
         )
     }
 
-    pub fn simulate<R: Rng>(&mut self, rng: &mut R) {
+    pub fn simulate<R: Rng>(&mut self, rng: &mut R, dt: f32) {
         let positions = self.positions.iter_mut();
         let angles = self.angles.iter_mut();
         let states = self.states.iter_mut();
         for (position, (angle, state)) in positions.zip(angles.zip(states)) {
-            simulation::simulate_one(position, angle, state, rng);
+            simulation::simulate_one(rng, dt, position, angle, state);
         }
     }
 }
