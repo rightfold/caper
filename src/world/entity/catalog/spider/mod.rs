@@ -1,50 +1,40 @@
-use cgmath::{Deg, Rad, Vector2};
+use cgmath::{Rad, Vector2};
 use rand::{Rand, Rng};
 
 use chance::gen_range_base;
 
-pub const INITIAL_HEALTH_BASE: i16 = 20;
-pub const INITIAL_HEALTH_CHANCE: (i16, i16) = (-5, 5);
+const INITIAL_HEALTH_BASE: i16 = 20;
+const INITIAL_HEALTH_CHANCE: (i16, i16) = (-5, 5);
 
 entity_set!(
     SpiderSet,
     SpiderId,
-    positions: positions_mut: Vector2<f32>,
-    angles:    angles_mut:    Rad<f32>,
-    healths:   healths_mut:   i16,
-    states:    states_mut:    SpiderState,
+    positions: Vector2<f32>,
+    angles:    Rad<f32>,
+    healths:   i16,
+    actions:   Action,
 );
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum SpiderState {
-    Resting(RotationState),
-    Wandering(RotationState),
+pub enum Action {
+    Resting(RotationAction),
+    Wandering(RotationAction),
     Attacking,
 }
 
-impl SpiderState {
-    pub fn rotation_state(&self) -> RotationState {
-        match self {
-            &SpiderState::Resting(r) => r,
-            &SpiderState::Wandering(r) => r,
-            &SpiderState::Attacking => RotationState::Zero,
-        }
-    }
-}
-
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum RotationState {
+pub enum RotationAction {
     Zero,
     Clockwise,
     Counterclockwise,
 }
 
-impl Rand for RotationState {
+impl Rand for RotationAction {
     fn rand<R: Rng>(rng: &mut R) -> Self {
         match rng.gen_range(0, 3) {
-            0 => RotationState::Zero,
-            1 => RotationState::Clockwise,
-            _ => RotationState::Counterclockwise,
+            0 => RotationAction::Zero,
+            1 => RotationAction::Clockwise,
+            _ => RotationAction::Counterclockwise,
         }
     }
 }
@@ -56,17 +46,8 @@ impl SpiderSet {
             positions: position,
             angles:    rng.gen(),
             healths:   gen_range_base(rng, INITIAL_HEALTH_BASE, INITIAL_HEALTH_CHANCE),
-            states:    SpiderState::Resting(RotationState::Clockwise),
+            actions:   Action::Wandering(RotationAction::Clockwise),
         )
-    }
-
-    pub fn simulate<R: Rng>(&mut self, rng: &mut R, dt: f32) {
-        let positions = self.positions.iter_mut();
-        let angles = self.angles.iter_mut();
-        let states = self.states.iter_mut();
-        for (position, (angle, state)) in positions.zip(angles.zip(states)) {
-            simulation::simulate_one(rng, dt, position, angle, state);
-        }
     }
 }
 

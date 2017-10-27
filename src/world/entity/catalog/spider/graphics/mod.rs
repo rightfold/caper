@@ -4,7 +4,7 @@ use graphics::gl;
 use graphics::obj::Obj;
 use world::entity::catalog::spider::SpiderSet;
 
-pub struct DrawState {
+pub struct GraphicsState {
     program: gl::Program,
     vertex_array: gl::VertexArray,
     _vertex_position_buffer: gl::Buffer<Vector3<f32>>,
@@ -14,7 +14,7 @@ pub struct DrawState {
     model_angle_buffer: gl::Buffer<Rad<f32>>,
 }
 
-impl DrawState {
+impl GraphicsState {
     pub fn new() -> Self {
         let model: Obj<Vector3<f32>> = Obj::read(include_str!(concat!(env!("OUT_DIR"), "/world/entity/catalog/spider/graphics/spider.obj"))).unwrap();
 
@@ -51,10 +51,10 @@ impl DrawState {
         gl::vertex_attrib_pointer::<f32>(2, false);
         gl::vertex_attrib_divisor(2, 1);
 
-        DrawState{program, vertex_array,
-                  _vertex_position_buffer: vertex_position_buffer,
-                  vertex_index_count, vertex_index_buffer, model_position_buffer,
-                  model_angle_buffer}
+        GraphicsState{program, vertex_array,
+                      _vertex_position_buffer: vertex_position_buffer,
+                      vertex_index_count, vertex_index_buffer, model_position_buffer,
+                      model_angle_buffer}
     }
 
     fn new_program() -> gl::Program {
@@ -77,10 +77,10 @@ impl DrawState {
     pub fn draw(&self, world_transform: Matrix4<f32>, spiders: &SpiderSet) {
         gl::bind_vertex_array(&self.vertex_array);
 
-        gl::named_buffer_data(&self.model_position_buffer, spiders.positions(),
+        gl::named_buffer_data(&self.model_position_buffer, entity_field!(spiders, positions),
                               gl::DataStoreUsage::StreamDraw);
 
-        gl::named_buffer_data(&self.model_angle_buffer, spiders.angles(),
+        gl::named_buffer_data(&self.model_angle_buffer, entity_field!(spiders, angles),
                               gl::DataStoreUsage::StreamDraw);
 
         gl::bind_buffer(gl::BufferBindingTarget::ElementArrayBuffer,

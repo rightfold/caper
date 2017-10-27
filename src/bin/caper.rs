@@ -12,7 +12,6 @@ use std::slice;
 use std::str;
 
 use glutin::{ContextBuilder, Event, EventsLoop, GlContext, GlWindow, WindowBuilder, WindowEvent};
-use time::PreciseTime;
 
 extern "system" fn log(_source: gl::types::GLenum,
                        _type: gl::types::GLenum,
@@ -73,9 +72,10 @@ fn main() {
     world.spiders.spawn(&mut rng, cgmath::Vector2::new( 2.0,  2.0));
     world.spiders.spawn(&mut rng, cgmath::Vector2::new( 3.0,  3.0));
 
-    let draw_state = caper::world::graphics::DrawState::new();
+    let mut simulation_state = caper::world::simulation::SimulationState::new();
+    let graphics_state = caper::world::graphics::GraphicsState::new();
 
-    let mut previous_simulation = PreciseTime::now();
+    let mut previous_simulation = time::precise_time_ns();
     let mut running = true;
     while running {
         events_loop.poll_events(|event| {
@@ -98,22 +98,13 @@ fn main() {
             }
         });
 
-        let current_simulation = PreciseTime::now();
-        let dt = previous_simulation
-            .to(current_simulation)
-            .num_microseconds()
-            .unwrap() as f32
-            / 1000.0;
+        let current_simulation = time::precise_time_ns();
+        let dt = (current_simulation - previous_simulation) as f32 / 1000000.0;
         previous_simulation = current_simulation;
+        simulation_state.simulate(&mut rng, dt, &mut world);
 
-        unsafe {
-            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
-        }
-
-        world.simulate(&mut rng, dt);
-
-        draw_state.draw(projection_transform, &world);
-
+        unsafe { gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT); }
+        graphics_state.draw(projection_transform, &world);
         window.swap_buffers().unwrap();
     }
 }

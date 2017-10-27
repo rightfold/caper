@@ -1,5 +1,4 @@
 use cgmath::{Vector2, Vector3};
-use rand::Rng;
 
 #[derive(Debug)]
 pub struct World {
@@ -28,12 +27,9 @@ impl World {
     pub fn player_position(&self) -> Vector2<f32> {
         self.player.position
     }
-
-    pub fn simulate<R: Rng>(&mut self, rng: &mut R, dt: f32) {
-        self.spiders.simulate(rng, dt);
-    }
 }
 
 pub mod entity;
 pub mod graphics;
 pub mod map;
+pub mod simulation;

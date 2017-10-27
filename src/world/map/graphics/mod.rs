@@ -5,14 +5,14 @@ use cgmath::{Matrix4, Vector2};
 use graphics::gl;
 use world::map::Map;
 
-pub struct DrawState {
+pub struct GraphicsState {
     program: gl::Program,
     vertex_array: gl::VertexArray,
     vertex_count: usize,
     _vertex_position_buffer: gl::Buffer<Vector2<f32>>,
 }
 
-impl DrawState {
+impl GraphicsState {
     pub fn new() -> Self {
         let vertex_positions = Self::generate_model();
 
@@ -33,8 +33,8 @@ impl DrawState {
                         &vertex_position_buffer);
         gl::vertex_attrib_pointer::<Vector2<f32>>(0, false);
 
-        DrawState{program, vertex_array, vertex_count,
-                  _vertex_position_buffer: vertex_position_buffer}
+        GraphicsState{program, vertex_array, vertex_count,
+                      _vertex_position_buffer: vertex_position_buffer}
     }
 
     fn generate_model() -> [Vector2<f32>; 8] {

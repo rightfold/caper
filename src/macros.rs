@@ -35,32 +35,11 @@ macro_rules! entity_set_despawn_method_body {
     };
 }
 
-/// Macro for defining a getter method for each given field, returning a slice
-/// of all values of the corresponding entity attributes.
-#[macro_export]
-macro_rules! entity_set_getter_methods {
-    ($id:ident, $($name:ident : $name_mut:ident : $type:ty,)*) => {
-        #[inline(always)]
-        pub fn size(&self) -> usize { self.base.size() }
-
-        #[inline(always)]
-        pub fn ids(&self) -> &[$id] { self.base.ids() }
-
-        $(
-            #[inline(always)]
-            pub fn $name(&self) -> &[$type] { &self.$name }
-
-            #[inline(always)]
-            pub fn $name_mut(&mut self) -> &mut [$type] { &mut self.$name }
-        )*
-    };
-}
-
 /// Macro for defining a type with a vector for each given field, as well as
 /// `new`, `despawn`, and getter methods.
 #[macro_export]
 macro_rules! entity_set {
-    ($name:ident, $id:ident, $($field_name:ident : $field_name_mut:ident : $field_type:ty,)*) => {
+    ($name:ident, $id:ident, $($field_name:ident : $field_type:ty,)*) => {
         #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
         pub struct $id(usize);
 
@@ -72,7 +51,7 @@ macro_rules! entity_set {
         #[derive(Debug)]
         pub struct $name {
             base: $crate::world::entity::collections::EntitySetBase<$id>,
-            $($field_name: Vec<$field_type>,)*
+            $(#[doc(hidden)] pub $field_name: Vec<$field_type>,)*
         }
 
         impl $name {
@@ -83,8 +62,16 @@ macro_rules! entity_set {
             pub fn despawn(&mut self, id: $id) {
                 entity_set_despawn_method_body!(self, id, $($field_name,)*);
             }
-
-            entity_set_getter_methods!($id, $($field_name: $field_name_mut: $field_type,)*);
         }
+    };
+}
+
+#[macro_export]
+macro_rules! entity_field {
+    ($self:expr, $field:ident) => {
+        &$self.$field[..]
+    };
+    ($self:expr, mut $field:ident) => {
+        &mut $self.$field[..]
     };
 }

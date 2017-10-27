@@ -1,57 +1,92 @@
-use cgmath::{Rad, Vector2};
+use cgmath::{Angle, Rad, Vector2};
 use rand::Rng;
 
 use world::entity::catalog::spider::*;
 
-pub const STATE_CHANGE_CHANCE: u32 = 500;
+const MOVEMENT_SPEED: f32 = 0.0006;
+const ROTATION_SPEED: Rad<f32> = Rad(0.0015);
+const ACTION_CHANGE_INTERVAL: f32 = 2000.0;
+const ACTION_CHANGE_CHANCE: u32 = 5;
 
-pub const ROTATION_SPEED: Deg<f32> = Deg(0.1);
-
-pub fn simulate_one<R: Rng>(rng: &mut R, dt: f32, position: &mut Vector2<f32>,
-                            angle: &mut Rad<f32>, state: &mut SpiderState) {
-    *position = simulate_position(dt, *position, *state);
-    *angle = simulate_angle(dt, *angle, state.rotation_state());
-    *state = simulate_state(rng, dt, *state);
+pub struct SimulationState {
+    since_action_change: f32,
 }
 
-fn simulate_position(_dt: f32, position: Vector2<f32>,
-                     state: SpiderState) -> Vector2<f32> {
-    match state {
-        SpiderState::Resting(_)   => position,
-        SpiderState::Wandering(_) => position, // TODO(rightfold): Move randomly.
-        SpiderState::Attacking    => position, // TODO(rightfold): Move towards target.
+impl SimulationState {
+    pub fn new() -> Self {
+        let since_action_change = 0.0;
+        SimulationState{since_action_change}
     }
-}
 
-fn simulate_angle(dt: f32, angle: Rad<f32>,
-                  rotation_state: RotationState) -> Rad<f32> {
-    match rotation_state {
-        RotationState::Zero => angle,
-        RotationState::Clockwise => angle - Rad::from(ROTATION_SPEED * dt),
-        RotationState::Counterclockwise => angle + Rad::from(ROTATION_SPEED * dt),
+    pub fn simulate<R: Rng>(&mut self, rng: &mut R, dt: f32, spiders: &mut SpiderSet) {
+        Self::simulate_movements(dt, spiders);
+        Self::simulate_rotations(dt, spiders);
+        self.simulate_action_changes(rng, dt, spiders);
     }
-}
 
-fn simulate_state<R>(rng: &mut R, dt: f32, state: SpiderState) -> SpiderState
-    where R: Rng {
-    match state {
-        // When a spider is attacking, it should keep attacking.
-        SpiderState::Attacking => SpiderState::Attacking,
+    fn simulate_movements(dt: f32, spiders: &mut SpiderSet) {
+        let positions = entity_field!(spiders, mut positions).iter_mut();
+        let angles = entity_field!(spiders, mut angles).iter();
+        let actions = entity_field!(spiders, mut actions).iter();
+        for (position, (angle, action)) in positions.zip(angles.zip(actions)) {
+            *position = Self::simulate_movement(dt, *position, *angle, action);
+        }
+    }
 
-        // A resting or wandering spider may decide to start doing the other
-        // thing from now on.
-        SpiderState::Resting(_) | SpiderState::Wandering(_) => {
-            let chance = (STATE_CHANGE_CHANCE as f32 / dt) as u32;
-            let change_state = rng.gen_weighted_bool(chance);
-            if change_state {
-                let rotation = rng.gen();
-                match rng.gen_range(0, 2) {
-                    0 => SpiderState::Resting(rotation),
-                    _ => SpiderState::Wandering(rotation),
-                }
-            } else {
-                state
+    fn simulate_movement(dt: f32, position: Vector2<f32>, angle: Rad<f32>,
+                         action: &Action) -> Vector2<f32> {
+        match action {
+            &Action::Resting(_) => position,
+            &Action::Wandering(_) => {
+                let (dy_unit, dx_unit) = angle.sin_cos();
+                position + MOVEMENT_SPEED * dt * Vector2::new(dx_unit, dy_unit)
+            },
+            &Action::Attacking => unimplemented!(),
+        }
+    }
+
+    fn simulate_rotations(dt: f32, spiders: &mut SpiderSet) {
+        let angles = entity_field!(spiders, mut angles).iter_mut();
+        let actions = entity_field!(spiders, mut actions).iter_mut();
+        for (angle, action) in angles.zip(actions) {
+            *angle = Self::simulate_rotation(dt, *angle, action);
+        }
+    }
+
+    fn simulate_rotation(dt: f32, angle: Rad<f32>, action: &Action) -> Rad<f32> {
+        let rotation_action = match action {
+            &Action::Resting(rotation_action) => rotation_action,
+            &Action::Wandering(rotation_action) => rotation_action,
+            &Action::Attacking => unimplemented!(),
+        };
+        let rotation_factor = match rotation_action {
+            RotationAction::Zero => 0.0,
+            RotationAction::Clockwise => -1.0,
+            RotationAction::Counterclockwise => 1.0,
+        };
+        angle + ROTATION_SPEED * dt * rotation_factor
+    }
+
+    fn simulate_action_changes<R: Rng>(&mut self, rng: &mut R, dt: f32,
+                                       spiders: &mut SpiderSet) {
+        self.since_action_change += dt;
+        while self.since_action_change > ACTION_CHANGE_INTERVAL {
+            self.since_action_change -= ACTION_CHANGE_INTERVAL;
+            for action in entity_field!(spiders, mut actions).iter_mut() {
+                *action = Self::simulate_action_change(rng, action);
             }
-        },
+        }
+    }
+
+    fn simulate_action_change<R: Rng>(rng: &mut R, action: &Action) -> Action {
+        let mut change_action = |next_action: fn(RotationAction) -> Action| {
+            let chance = rng.gen_weighted_bool(ACTION_CHANGE_CHANCE);
+            if chance { next_action(rng.gen()) } else { *action }
+        };
+        match action {
+            &Action::Resting(_) => change_action(Action::Wandering),
+            &Action::Wandering(_) => change_action(Action::Resting),
+            &Action::Attacking => Action::Attacking,
+        }
     }
 }

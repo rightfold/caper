@@ -4,7 +4,7 @@ use graphics::gl;
 use graphics::obj::Obj;
 use world::entity::catalog::player::Player;
 
-pub struct DrawState {
+pub struct GraphicsState {
     program: gl::Program,
     vertex_array: gl::VertexArray,
     _vertex_position_buffer: gl::Buffer<Vector3<f32>>,
@@ -12,7 +12,7 @@ pub struct DrawState {
     vertex_index_buffer: gl::Buffer<u32>,
 }
 
-impl DrawState {
+impl GraphicsState {
     pub fn new() -> Self {
         let model: Obj<Vector3<f32>> = Obj::read(include_str!(concat!(env!("OUT_DIR"), "/world/entity/catalog/player/graphics/player.obj"))).unwrap();
 
@@ -36,9 +36,9 @@ impl DrawState {
                         &vertex_position_buffer);
         gl::vertex_attrib_pointer::<Vector3<f32>>(0, false);
 
-        DrawState{program, vertex_array,
-                  _vertex_position_buffer: vertex_position_buffer,
-                  vertex_index_count, vertex_index_buffer}
+        GraphicsState{program, vertex_array,
+                      _vertex_position_buffer: vertex_position_buffer,
+                      vertex_index_count, vertex_index_buffer}
     }
 
     fn new_program() -> gl::Program {

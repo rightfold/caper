@@ -2,22 +2,22 @@ use cgmath::{EuclideanSpace, Matrix4, Point3, Vector3};
 
 use world::{World, entity, map};
 
-pub struct DrawState {
-    map: map::graphics::DrawState,
+pub struct GraphicsState {
+    map: map::graphics::GraphicsState,
 
-    player: entity::catalog::player::graphics::DrawState,
+    player: entity::catalog::player::graphics::GraphicsState,
 
-    spiders: entity::catalog::spider::graphics::DrawState,
+    spiders: entity::catalog::spider::graphics::GraphicsState,
 }
 
-impl DrawState {
+impl GraphicsState {
     pub fn new() -> Self {
-        DrawState{
-            map: map::graphics::DrawState::new(),
+        GraphicsState{
+            map: map::graphics::GraphicsState::new(),
 
-            player: entity::catalog::player::graphics::DrawState::new(),
+            player: entity::catalog::player::graphics::GraphicsState::new(),
 
-            spiders: entity::catalog::spider::graphics::DrawState::new(),
+            spiders: entity::catalog::spider::graphics::GraphicsState::new(),
         }
     }
 
