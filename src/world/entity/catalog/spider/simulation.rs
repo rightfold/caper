@@ -3,7 +3,7 @@ use rand::Rng;
 
 use world::entity::catalog::spider::*;
 
-pub const STATE_CHANGE_CHANCE: u32 = 250;
+pub const STATE_CHANGE_CHANCE: u32 = 500;
 
 pub const ROTATION_SPEED: Deg<f32> = Deg(0.1);
 
@@ -41,7 +41,7 @@ fn simulate_state<R>(rng: &mut R, dt: f32, state: SpiderState) -> SpiderState
         // A resting or wandering spider may decide to start doing the other
         // thing from now on.
         SpiderState::Resting(_) | SpiderState::Wandering(_) => {
-            let chance = (STATE_CHANGE_CHANCE as f32 * dt) as u32;
+            let chance = (STATE_CHANGE_CHANCE as f32 / dt) as u32;
             let change_state = rng.gen_weighted_bool(chance);
             if change_state {
                 let rotation = rng.gen();
