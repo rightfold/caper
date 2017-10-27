@@ -249,6 +249,14 @@ impl Uniform for cgmath::Vector2<i32> {
     }
 }
 
+impl Uniform for cgmath::Vector2<f32> {
+    fn uniform(self, location: usize) {
+        unsafe {
+            gl::Uniform2f(location as gl::types::GLint, self.x, self.y);
+        }
+    }
+}
+
 impl Uniform for cgmath::Matrix4<f32> {
     fn uniform(self, location: usize) {
         unsafe {
