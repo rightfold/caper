@@ -14,7 +14,9 @@ pub struct GraphicsState {
 
 impl GraphicsState {
     pub fn new() -> Self {
-        let model: Obj<Vector3<f32>> = Obj::read(include_str!(concat!(env!("OUT_DIR"), "/world/entity/catalog/player/graphics/player.obj"))).unwrap();
+        let model: Obj<Vector3<f32>, Vector3<f32>> =
+            Obj::read(include_str!(concat!(env!("OUT_DIR"),
+                                           "/world/entity/catalog/player/graphics/player.obj"))).unwrap();
 
         let program = Self::new_program();
 
