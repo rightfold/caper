@@ -45,7 +45,7 @@ fn main() {
         gl::DebugMessageCallback(log, ptr::null());
     }
 
-    let projection_transform = cgmath::perspective(
+    let pmat = cgmath::perspective(
         cgmath::Deg(45.0),
         768.0 / 768.0,
         0.1,
@@ -103,7 +103,7 @@ fn main() {
         simulation_state.simulate(&mut rng, dt, &input, &mut world);
 
         unsafe { gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT); }
-        graphics_state.draw(projection_transform, &world);
+        graphics_state.draw(pmat, &world);
         window.swap_buffers().unwrap();
     }
 }

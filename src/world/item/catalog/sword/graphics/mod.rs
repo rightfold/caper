@@ -1,9 +1,8 @@
-use cgmath::{Matrix4, Rad, Vector2, Vector3};
+use cgmath::{Matrix4, Vector2, Vector3};
 
 use graphics;
 use graphics::gl;
 use graphics::obj::Obj;
-use world::entity::catalog::spider::SpiderSet;
 
 pub struct GraphicsState {
     program: gl::Program,
@@ -12,15 +11,13 @@ pub struct GraphicsState {
     _vertex_normal_buffer: gl::Buffer<Vector3<f32>>,
     vertex_index_count: usize,
     vertex_index_buffer: gl::Buffer<u32>,
-    model_position_buffer: gl::Buffer<Vector2<f32>>,
-    model_angle_buffer: gl::Buffer<Rad<f32>>,
 }
 
 impl GraphicsState {
     pub fn new() -> Self {
         let model: Obj<Vector3<f32>, Vector3<f32>> =
             Obj::read(include_str!(concat!(env!("OUT_DIR"),
-                                           "/world/entity/catalog/spider/graphics/spider.obj"))).unwrap();
+                                           "/world/item/catalog/sword/graphics/sword.obj"))).unwrap();
 
         let program = Self::new_program();
 
@@ -37,10 +34,6 @@ impl GraphicsState {
         gl::named_buffer_data(&vertex_index_buffer, &model.vertex_indices,
                               gl::DataStoreUsage::StaticDraw);
 
-        let model_position_buffer = gl::Buffer::new();
-
-        let model_angle_buffer = gl::Buffer::new();
-
         let vertex_array = gl::VertexArray::new();
 
         gl::bind_vertex_array(&vertex_array);
@@ -55,44 +48,22 @@ impl GraphicsState {
                         &vertex_normal_buffer);
         gl::vertex_attrib_pointer::<Vector3<f32>>(1, false);
 
-        gl::enable_vertex_attrib_array(2);
-        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer,
-                        &model_position_buffer);
-        gl::vertex_attrib_pointer::<Vector2<f32>>(2, false);
-        gl::vertex_attrib_divisor(2, 1);
-
-        gl::enable_vertex_attrib_array(3);
-        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer,
-                        &model_angle_buffer);
-        gl::vertex_attrib_pointer::<f32>(3, false);
-        gl::vertex_attrib_divisor(3, 1);
-
         GraphicsState{program, vertex_array,
                       _vertex_position_buffer: vertex_position_buffer,
                       _vertex_normal_buffer: vertex_normal_buffer,
-                      vertex_index_count, vertex_index_buffer,
-                      model_position_buffer, model_angle_buffer}
+                      vertex_index_count, vertex_index_buffer}
     }
 
     fn new_program() -> gl::Program {
         graphics::catalog::make_program(
-            include_bytes!("spider.vert"),
-            include_bytes!("spider.frag"),
+            include_bytes!("sword.vert"),
+            include_bytes!("sword.frag"),
         )
     }
 
     pub fn draw(&self, pmat: Matrix4<f32>, vmat: Matrix4<f32>,
-                mmat: Matrix4<f32>, light_position: Vector2<f32>,
-                spiders: &SpiderSet) {
+                mmat: Matrix4<f32>, light_position: Vector2<f32>) {
         gl::bind_vertex_array(&self.vertex_array);
-
-        gl::named_buffer_data(&self.model_position_buffer,
-                              entity_field!(spiders, positions),
-                              gl::DataStoreUsage::StreamDraw);
-
-        gl::named_buffer_data(&self.model_angle_buffer,
-                              entity_field!(spiders, angles),
-                              gl::DataStoreUsage::StreamDraw);
 
         gl::bind_buffer(gl::BufferBindingTarget::ElementArrayBuffer,
                         &self.vertex_index_buffer);
@@ -102,12 +73,10 @@ impl GraphicsState {
         gl::use_program(&self.program);
 
         gl::uniform(0, pmat);
-        gl::uniform(1, vmat);
-        gl::uniform(2, mmat);
-        gl::uniform(3, light_position);
+        gl::uniform(1, vmat * mmat);
+        gl::uniform(2, light_position);
 
-        gl::draw_elements_instanced::<u32>(gl::PrimitiveType::Triangles,
-                                           self.vertex_index_count,
-                                           spiders.positions.len());
+        gl::draw_elements::<u32>(gl::PrimitiveType::Triangles,
+                                 self.vertex_index_count);
     }
 }

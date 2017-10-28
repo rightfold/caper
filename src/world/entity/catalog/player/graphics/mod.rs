@@ -4,6 +4,7 @@ use graphics;
 use graphics::gl;
 use graphics::obj::Obj;
 use world::entity::catalog::player::Player;
+use world::item;
 
 pub struct GraphicsState {
     program: gl::Program,
@@ -12,6 +13,8 @@ pub struct GraphicsState {
     _vertex_normal_buffer: gl::Buffer<Vector3<f32>>,
     vertex_index_count: usize,
     vertex_index_buffer: gl::Buffer<u32>,
+
+    sword: item::catalog::sword::graphics::GraphicsState,
 }
 
 impl GraphicsState {
@@ -49,10 +52,12 @@ impl GraphicsState {
                         &vertex_normal_buffer);
         gl::vertex_attrib_pointer::<Vector3<f32>>(1, false);
 
+        let sword = item::catalog::sword::graphics::GraphicsState::new();
+
         GraphicsState{program, vertex_array,
                       _vertex_position_buffer: vertex_position_buffer,
                       _vertex_normal_buffer: vertex_normal_buffer,
-                      vertex_index_count, vertex_index_buffer}
+                      vertex_index_count, vertex_index_buffer, sword}
     }
 
     fn new_program() -> gl::Program {
@@ -62,10 +67,11 @@ impl GraphicsState {
         )
     }
 
-    pub fn draw(&self, world_transform: Matrix4<f32>,
-                light_position: Vector2<f32>, player: &Player) {
-        let model_transform =
-            Matrix4::from_translation(player.position.extend(0.0))
+    pub fn draw(&self, pmat: Matrix4<f32>, vmat: Matrix4<f32>,
+                mut mmat: Matrix4<f32>, light_position: Vector2<f32>,
+                player: &Player) {
+        mmat = mmat
+            * Matrix4::from_translation(player.position.extend(0.0))
             * Matrix4::from_angle_z(player.angle);
 
         gl::bind_vertex_array(&self.vertex_array);
@@ -77,11 +83,14 @@ impl GraphicsState {
 
         gl::use_program(&self.program);
 
-        gl::uniform(0, world_transform);
-        gl::uniform(1, model_transform);
-        gl::uniform(2, light_position);
+        gl::uniform(0, pmat);
+        gl::uniform(1, vmat);
+        gl::uniform(2, mmat);
+        gl::uniform(3, light_position);
 
         gl::draw_elements::<u32>(gl::PrimitiveType::Triangles,
                                  self.vertex_index_count);
+
+        self.sword.draw(pmat, vmat, mmat, light_position);
     }
 }

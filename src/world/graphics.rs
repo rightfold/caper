@@ -1,4 +1,4 @@
-use cgmath::{EuclideanSpace, Matrix4, Point3, Vector3};
+use cgmath::{EuclideanSpace, Matrix4, One, Point3, Vector3};
 
 use world::{World, entity, map};
 
@@ -21,19 +21,20 @@ impl GraphicsState {
         }
     }
 
-    pub fn draw(&self, projection_transform: Matrix4<f32>, world: &World) {
-        let view_transform = Matrix4::look_at(
+    pub fn draw(&self, pmat: Matrix4<f32>, world: &World) {
+        let vmat = Matrix4::look_at(
             Point3::from_vec(world.camera_position()),
             Point3::from_vec(world.player_position().extend(0.0)),
             Vector3::new(0.0, 0.0, 1.0),
         );
-        let world_transform = projection_transform * view_transform;
+        let mmat = Matrix4::one();
+
         let light_position = world.player_position();
 
-        self.map.draw(world_transform, &world.map);
+        self.map.draw(pmat, vmat, mmat, light_position, &world.map);
 
-        self.player.draw(world_transform, light_position, &world.player);
+        self.player.draw(pmat, vmat, mmat, light_position, &world.player);
 
-        self.spiders.draw(world_transform, light_position, &world.spiders);
+        self.spiders.draw(pmat, vmat, mmat, light_position, &world.spiders);
     }
 }

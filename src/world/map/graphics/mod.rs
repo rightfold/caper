@@ -66,21 +66,25 @@ impl GraphicsState {
         )
     }
 
-    pub fn draw(&self, world_transform: Matrix4<f32>, map: &Map) {
+    pub fn draw(&self, pmat: Matrix4<f32>, vmat: Matrix4<f32>,
+                mmat: Matrix4<f32>, light_position: Vector2<f32>, map: &Map) {
         gl::bind_vertex_array(&self.vertex_array);
 
         gl::draw_buffer(gl::ColorBuffer::Back);
 
         gl::use_program(&self.program);
 
-        gl::uniform(0, world_transform);
+        gl::uniform(0, pmat);
+        gl::uniform(1, vmat);
+        gl::uniform(2, mmat);
+        gl::uniform(3, light_position);
 
         for (&sector_id, sector) in map.sectors.iter() {
             gl::named_buffer_data(&self.tile_material_buffer,
                                   &sector.materials[..],
                                   gl::DataStoreUsage::DynamicDraw);
 
-            gl::uniform(1, sector_id);
+            gl::uniform(4, sector_id);
 
             gl::draw_arrays_instanced(gl::PrimitiveType::TriangleFan,
                                       self.vertex_count,

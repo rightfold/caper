@@ -30,6 +30,7 @@ impl World {
 }
 
 pub mod entity;
+pub mod item;
 pub mod graphics;
 pub mod map;
 pub mod simulation;
