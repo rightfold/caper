@@ -32,7 +32,7 @@ impl GraphicsState {
 
         self.map.draw(world_transform, &world.map);
 
-        self.player.draw(world_transform, &world.player);
+        self.player.draw(world_transform, light_position, &world.player);
 
         self.spiders.draw(world_transform, light_position, &world.spiders);
     }

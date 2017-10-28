@@ -1,4 +1,4 @@
-use cgmath::{Matrix4, Vector3};
+use cgmath::{Matrix4, Vector2, Vector3};
 
 use graphics::gl;
 use graphics::obj::Obj;
@@ -8,6 +8,7 @@ pub struct GraphicsState {
     program: gl::Program,
     vertex_array: gl::VertexArray,
     _vertex_position_buffer: gl::Buffer<Vector3<f32>>,
+    _vertex_normal_buffer: gl::Buffer<Vector3<f32>>,
     vertex_index_count: usize,
     vertex_index_buffer: gl::Buffer<u32>,
 }
@@ -24,6 +25,10 @@ impl GraphicsState {
         gl::named_buffer_data(&vertex_position_buffer, &model.vertex_positions,
                               gl::DataStoreUsage::StaticDraw);
 
+        let vertex_normal_buffer = gl::Buffer::new();
+        gl::named_buffer_data(&vertex_normal_buffer, &model.vertex_normals,
+                              gl::DataStoreUsage::StaticDraw);
+
         let vertex_index_count = model.vertex_indices.len();
         let vertex_index_buffer = gl::Buffer::new();
         gl::named_buffer_data(&vertex_index_buffer, &model.vertex_indices,
@@ -38,8 +43,14 @@ impl GraphicsState {
                         &vertex_position_buffer);
         gl::vertex_attrib_pointer::<Vector3<f32>>(0, false);
 
+        gl::enable_vertex_attrib_array(1);
+        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer,
+                        &vertex_normal_buffer);
+        gl::vertex_attrib_pointer::<Vector3<f32>>(1, false);
+
         GraphicsState{program, vertex_array,
                       _vertex_position_buffer: vertex_position_buffer,
+                      _vertex_normal_buffer: vertex_normal_buffer,
                       vertex_index_count, vertex_index_buffer}
     }
 
@@ -60,9 +71,9 @@ impl GraphicsState {
         program
     }
 
-    pub fn draw(&self, world_transform: Matrix4<f32>, player: &Player) {
+    pub fn draw(&self, world_transform: Matrix4<f32>,
+                light_position: Vector2<f32>, player: &Player) {
         let model_transform = Matrix4::from_translation(player.position.extend(0.0));
-        let world_model_transform = world_transform * model_transform;
 
         gl::bind_vertex_array(&self.vertex_array);
 
@@ -73,7 +84,9 @@ impl GraphicsState {
 
         gl::use_program(&self.program);
 
-        gl::uniform(0, world_model_transform);
+        gl::uniform(0, world_transform);
+        gl::uniform(1, model_transform);
+        gl::uniform(2, light_position);
 
         gl::draw_elements::<u32>(gl::PrimitiveType::Triangles,
                                  self.vertex_index_count);
