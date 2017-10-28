@@ -4,19 +4,25 @@ use input::Input;
 use world::entity::catalog::player::*;
 
 const MOVEMENT_SPEED: f32 = 0.004;
-const SWORD_SWINGING_SPEED: f32 = 0.005;
+const ATTACK_INTERVAL: f32 = 400.0;
+const SWORD_SWING_SPEED: f32 = 0.005;
 
 pub struct SimulationState {
+    since_attack: f32,
+    attack_released: bool,
 }
 
 impl SimulationState {
     pub fn new() -> Self {
-        SimulationState{}
+        SimulationState{
+            since_attack: 0.0,
+            attack_released: true,
+        }
     }
 
     pub fn simulate(&mut self, dt: f32, input: &Input, player: &mut Player) {
         Self::simulate_move(dt, input, player);
-        Self::simulate_attack(dt, input, player);
+        self.simulate_attack(dt, input, player);
     }
 
     fn simulate_move(dt: f32, input: &Input, player: &mut Player) {
@@ -30,23 +36,32 @@ impl SimulationState {
         }
     }
 
-    fn simulate_attack(dt: f32, input: &Input, player: &mut Player) {
+    fn simulate_attack(&mut self, dt: f32, input: &Input, player: &mut Player) {
+        self.since_attack += dt;
+
+        if !input.attack {
+            self.attack_released = true;
+        }
+
         match player.sword_state {
-            SwordState::Carrying => {
-                if input.attack {
+            SwordState::Carrying =>
+                if input.attack && self.may_attack() {
                     player.sword_state = SwordState::Swinging(0.0);
-                } else {
-                    player.sword_state = SwordState::Carrying;
-                }
-            },
+                    self.since_attack = 0.0;
+                },
             SwordState::Swinging(mut t) => {
-                t += SWORD_SWINGING_SPEED * dt;
+                t += SWORD_SWING_SPEED * dt;
                 player.sword_state = if t < 1.0 {
+                    self.attack_released = false;
                     SwordState::Swinging(t)
                 } else {
                     SwordState::Carrying
                 };
             },
         };
+    }
+
+    fn may_attack(&self) -> bool {
+        self.attack_released && self.since_attack > ATTACK_INTERVAL
     }
 }
