@@ -77,7 +77,9 @@ fn main() {
 
     let mut previous_simulation = time::precise_time_ns();
     let mut running = true;
+    let mut input = caper::input::Input::new();
     while running {
+        let mut keyboard_inputs = Vec::new();
         events_loop.poll_events(|event| {
             match event {
                 Event::WindowEvent{event: WindowEvent::Closed, ..} => {
@@ -94,6 +96,10 @@ fn main() {
                                      h as gl::types::GLsizei);
                     }
                 },
+                Event::WindowEvent{event: WindowEvent::KeyboardInput{input, ..}, ..} => {
+                    println!("{:?}", event);
+                    keyboard_inputs.push(input);
+                },
                 _ => (),
             }
         });
@@ -101,7 +107,11 @@ fn main() {
         let current_simulation = time::precise_time_ns();
         let dt = (current_simulation - previous_simulation) as f32 / 1000000.0;
         previous_simulation = current_simulation;
-        simulation_state.simulate(&mut rng, dt, &mut world);
+
+        for keyboard_input in keyboard_inputs.iter() {
+            input.keyboard_input(keyboard_input);
+        }
+        simulation_state.simulate(&mut rng, dt, &input, &mut world);
 
         unsafe { gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT); }
         graphics_state.draw(projection_transform, &world);
