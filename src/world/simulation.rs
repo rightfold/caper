@@ -20,7 +20,7 @@ impl SimulationState {
     }
 
     pub fn simulate<R: Rng>(&mut self, rng: &mut R, dt: f32, input: &Input, world: &mut World) {
-        self.player.simulate(dt, input, &mut world.player);
+        self.player.simulate(dt, input, world);
         self.spiders.simulate(rng, dt, &mut world.spiders);
     }
 }

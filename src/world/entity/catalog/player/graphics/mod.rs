@@ -98,18 +98,18 @@ impl GraphicsState {
         gl::uniform(2, mmat);
         gl::uniform(3, light_position);
 
-        self.draw_sword(pmat, vmat, mmat, light_position, player.sword_state);
+        self.draw_sword(pmat, vmat, mmat, light_position, player.attack_state);
     }
 
     fn draw_sword(&self, pmat: Matrix4<f32>, vmat: Matrix4<f32>,
                   mut mmat: Matrix4<f32>, light_position: Vector2<f32>,
-                  sword_state: SwordState) {
-        mmat = match sword_state {
-            SwordState::Carrying => mmat * self.equipment_carrying_mat,
-            SwordState::Swinging(t) => mmat
+                  attack_state: Option<AttackState>) {
+        mmat = match attack_state {
+            None => mmat * self.equipment_carrying_mat,
+            Some(AttackState{progress}) => mmat
                 * self.equipment_swinging_mat
-                * Matrix4::from_angle_z(Deg(t * 110.0))
-                * Matrix4::from_translation(Vector3::new(t * 0.3, 0.0, 0.0)),
+                * Matrix4::from_angle_z(Deg(progress * 110.0))
+                * Matrix4::from_translation(Vector3::new(progress * 0.3, 0.0, 0.0)),
         };
 
         gl::draw_elements::<u32>(gl::PrimitiveType::Triangles,

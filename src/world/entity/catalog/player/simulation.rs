@@ -1,11 +1,14 @@
-use cgmath::{InnerSpace, Zero};
+use cgmath::{InnerSpace, MetricSpace, Zero};
 
 use input::Input;
+use world::World;
 use world::entity::catalog::player::*;
 
 const MOVEMENT_SPEED: f32 = 0.004;
 const ATTACK_INTERVAL: f32 = 400.0;
-const SWORD_SWING_SPEED: f32 = 0.005;
+const ATTACK_SPEED: f32 = 0.005;
+const ATTACK_DAMAGE: f32 = 0.01;
+const ATTACK_RANGE: f32 = 1.0;
 
 pub struct SimulationState {
     since_attack: f32,
@@ -20,9 +23,10 @@ impl SimulationState {
         }
     }
 
-    pub fn simulate(&mut self, dt: f32, input: &Input, player: &mut Player) {
-        Self::simulate_move(dt, input, player);
-        self.simulate_attack(dt, input, player);
+    pub fn simulate(&mut self, dt: f32, input: &Input, world: &mut World) {
+        Self::simulate_move(dt, input, &mut world.player);
+        self.simulate_attack_state(dt, input, &mut world.player);
+        Self::simulate_attack(dt, world)
     }
 
     fn simulate_move(dt: f32, input: &Input, player: &mut Player) {
@@ -36,32 +40,44 @@ impl SimulationState {
         }
     }
 
-    fn simulate_attack(&mut self, dt: f32, input: &Input, player: &mut Player) {
+    fn simulate_attack_state(&mut self, dt: f32, input: &Input, player: &mut Player) {
         self.since_attack += dt;
 
         if !input.attack {
             self.attack_released = true;
         }
 
-        match player.sword_state {
-            SwordState::Carrying =>
-                if input.attack && self.may_attack() {
-                    player.sword_state = SwordState::Swinging(0.0);
+        let may_attack = self.attack_released && self.since_attack > ATTACK_INTERVAL;
+
+        match player.attack_state {
+            None =>
+                if input.attack && may_attack {
+                    player.attack_state = Some(AttackState{progress: 0.0});
                     self.since_attack = 0.0;
                 },
-            SwordState::Swinging(mut t) => {
-                t += SWORD_SWING_SPEED * dt;
-                player.sword_state = if t < 1.0 {
-                    self.attack_released = false;
-                    SwordState::Swinging(t)
+            Some(AttackState{progress}) => {
+                let new_progress = progress + ATTACK_SPEED * dt;
+                if new_progress > 1.0 {
+                    player.attack_state = None;
                 } else {
-                    SwordState::Carrying
-                };
+                    self.attack_released = false;
+                    player.attack_state = Some(AttackState{progress: new_progress});
+                }
             },
         };
     }
 
-    fn may_attack(&self) -> bool {
-        self.attack_released && self.since_attack > ATTACK_INTERVAL
+    fn simulate_attack(dt: f32, world: &mut World) {
+        if world.player.attack_state.is_none() {
+            return;
+        }
+
+        let spider_positions = entity_field!(world.spiders, positions).iter();
+        let spider_healths = entity_field!(world.spiders, mut healths).iter_mut();
+        for (&position, health) in spider_positions.zip(spider_healths) {
+            if world.player.position.distance(position) < ATTACK_RANGE {
+                *health -= dt * ATTACK_DAMAGE;
+            }
+        }
     }
 }

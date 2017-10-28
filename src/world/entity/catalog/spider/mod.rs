@@ -3,15 +3,15 @@ use rand::{Rand, Rng};
 
 use chance::gen_range_base;
 
-const INITIAL_HEALTH_BASE: i16 = 20;
-const INITIAL_HEALTH_CHANCE: (i16, i16) = (-5, 5);
+const INITIAL_HEALTH_BASE: f32 = 20.0;
+const INITIAL_HEALTH_CHANCE: (f32, f32) = (-5.0, 5.0);
 
 entity_set!(
     SpiderSet,
     SpiderId,
     positions: Vector2<f32>,
     angles:    Rad<f32>,
-    healths:   i16,
+    healths:   f32,
     actions:   Action,
 );
 

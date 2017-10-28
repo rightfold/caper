@@ -62,6 +62,16 @@ macro_rules! entity_set {
             pub fn despawn(&mut self, id: $id) {
                 entity_set_despawn_method_body!(self, id, $($field_name,)*);
             }
+
+            #[inline(always)]
+            pub fn size(&self) -> usize {
+                self.base.size()
+            }
+
+            #[inline(always)]
+            pub fn ids(&self) -> &[$id] {
+                self.base.ids()
+            }
         }
     };
 }

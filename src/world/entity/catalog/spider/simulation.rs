@@ -22,6 +22,7 @@ impl SimulationState {
         Self::simulate_movements(dt, spiders);
         Self::simulate_rotations(dt, spiders);
         self.simulate_action_changes(rng, dt, spiders);
+        Self::simulate_deaths(spiders);
     }
 
     fn simulate_movements(dt: f32, spiders: &mut SpiderSet) {
@@ -87,6 +88,20 @@ impl SimulationState {
             &Action::Resting(_) => change_action(Action::Wandering),
             &Action::Wandering(_) => change_action(Action::Resting),
             &Action::Attacking => Action::Attacking,
+        }
+    }
+
+    fn simulate_deaths(spiders: &mut SpiderSet) {
+        let dead_ids = {
+            let ids = spiders.ids().iter();
+            let healths = entity_field!(spiders, healths).iter();
+            ids.zip(healths)
+                .filter(|&(_, &health)| health < 0.0)
+                .map(|(&id, _)| id)
+                .collect::<Vec<_>>()
+        };
+        for id in dead_ids {
+            spiders.despawn(id);
         }
     }
 }
