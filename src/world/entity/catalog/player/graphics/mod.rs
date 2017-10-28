@@ -73,7 +73,9 @@ impl GraphicsState {
 
     pub fn draw(&self, world_transform: Matrix4<f32>,
                 light_position: Vector2<f32>, player: &Player) {
-        let model_transform = Matrix4::from_translation(player.position.extend(0.0));
+        let model_transform =
+            Matrix4::from_translation(player.position.extend(0.0))
+            * Matrix4::from_angle_z(player.angle);
 
         gl::bind_vertex_array(&self.vertex_array);
 
