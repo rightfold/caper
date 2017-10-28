@@ -2,7 +2,7 @@ use cgmath::{InnerSpace, MetricSpace, Zero};
 
 use input::Input;
 use world::World;
-use world::entity::catalog::player::*;
+use world::player::*;
 
 const MOVEMENT_SPEED: f32 = 0.004;
 const ATTACK_INTERVAL: f32 = 400.0;
@@ -72,12 +72,20 @@ impl SimulationState {
             return;
         }
 
-        let spider_positions = entity_field!(world.spiders, positions).iter();
-        let spider_healths = entity_field!(world.spiders, mut healths).iter_mut();
-        for (&position, health) in spider_positions.zip(spider_healths) {
-            if world.player.position.distance(position) < ATTACK_RANGE {
-                *health -= dt * ATTACK_DAMAGE;
-            }
+        macro_rules! attack {
+            ($($singular:ident : $plural:ident : $type:ident,)*) => {
+                $({
+                    let positions = entity_field!(world.$plural, positions).iter();
+                    let healths = entity_field!(world.$plural, mut healths).iter_mut();
+                    for (&position, health) in positions.zip(healths) {
+                        if world.player.position.distance(position) < ATTACK_RANGE {
+                            *health -= dt * ATTACK_DAMAGE;
+                        }
+                    }
+                })*
+            };
         }
+
+        with_each_entity_set!(attack);
     }
 }

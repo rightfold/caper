@@ -3,8 +3,8 @@ use cgmath::{Deg, Matrix4, Vector2, Vector3};
 use graphics;
 use graphics::gl;
 use graphics::obj::Obj;
-use world::entity::catalog::player::*;
 use world::item;
+use world::player::*;
 
 pub struct GraphicsState {
     program: gl::Program,

@@ -1,6 +1,7 @@
 use cgmath::{Angle, Rad, Vector2};
 use rand::Rng;
 
+use world::World;
 use world::entity::catalog::spider::*;
 
 const MOVEMENT_SPEED: f32 = 0.0006;
@@ -18,11 +19,11 @@ impl SimulationState {
         SimulationState{since_action_change}
     }
 
-    pub fn simulate<R: Rng>(&mut self, rng: &mut R, dt: f32, spiders: &mut SpiderSet) {
-        Self::simulate_movements(dt, spiders);
-        Self::simulate_rotations(dt, spiders);
-        self.simulate_action_changes(rng, dt, spiders);
-        Self::simulate_deaths(spiders);
+    pub fn simulate<R: Rng>(&mut self, rng: &mut R, dt: f32, world: &mut World) {
+        Self::simulate_movements(dt, &mut world.spiders);
+        Self::simulate_rotations(dt, &mut world.spiders);
+        self.simulate_action_changes(rng, dt, &mut world.spiders);
+        simulate_deaths!(&mut world.spiders);
     }
 
     fn simulate_movements(dt: f32, spiders: &mut SpiderSet) {
@@ -88,20 +89,6 @@ impl SimulationState {
             &Action::Resting(_) => change_action(Action::Wandering),
             &Action::Wandering(_) => change_action(Action::Resting),
             &Action::Attacking => Action::Attacking,
-        }
-    }
-
-    fn simulate_deaths(spiders: &mut SpiderSet) {
-        let dead_ids = {
-            let ids = spiders.ids().iter();
-            let healths = entity_field!(spiders, healths).iter();
-            ids.zip(healths)
-                .filter(|&(_, &health)| health < 0.0)
-                .map(|(&id, _)| id)
-                .collect::<Vec<_>>()
-        };
-        for id in dead_ids {
-            spiders.despawn(id);
         }
     }
 }

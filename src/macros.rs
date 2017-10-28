@@ -85,3 +85,31 @@ macro_rules! entity_field {
         &mut $self.$field[..]
     };
 }
+
+#[macro_export]
+macro_rules! with_each_entity_set {
+    ($macro:ident) => {
+        $macro!(
+            spider    : spiders    : SpiderSet,
+            gas_spore : gas_spores : GasSporeSet,
+        );
+    };
+}
+
+#[macro_export]
+macro_rules! simulate_deaths {
+    ($set:expr) => {{
+        let set = $set;
+        let dead_ids = {
+            let ids = set.ids().iter();
+            let healths = entity_field!(set, healths).iter();
+            ids.zip(healths)
+                .filter(|&(_, &health)| health < 0.0)
+                .map(|(&id, _)| id)
+                .collect::<Vec<_>>()
+        };
+        for id in dead_ids {
+            set.despawn(id);
+        }
+    }};
+}
