@@ -5,6 +5,7 @@ pub struct Input {
     pub move_south: bool,
     pub move_west:  bool,
     pub move_east:  bool,
+    pub attack: bool,
 }
 
 impl Input {
@@ -14,6 +15,7 @@ impl Input {
             move_south: false,
             move_west:  false,
             move_east:  false,
+            attack:     false,
         }
     }
 
@@ -23,10 +25,11 @@ impl Input {
             ElementState::Released => false,
         };
         match input.scancode {
-            0x11 => self.move_north = pressed,
-            0x1F => self.move_south = pressed,
-            0x1E => self.move_west  = pressed,
-            0x20 => self.move_east  = pressed,
+            0x11 /*   W   */ => self.move_north = pressed,
+            0x1F /*   S   */ => self.move_south = pressed,
+            0x1E /*   A   */ => self.move_west  = pressed,
+            0x20 /*   D   */ => self.move_east  = pressed,
+            0x39 /* space */ => self.attack     = pressed,
             _ => (),
         }
     }

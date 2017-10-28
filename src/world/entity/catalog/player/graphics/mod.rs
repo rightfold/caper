@@ -1,9 +1,9 @@
-use cgmath::{Matrix4, Vector2, Vector3};
+use cgmath::{Deg, Matrix4, Vector2, Vector3};
 
 use graphics;
 use graphics::gl;
 use graphics::obj::Obj;
-use world::entity::catalog::player::Player;
+use world::entity::catalog::player::*;
 use world::item;
 
 pub struct GraphicsState {
@@ -14,6 +14,9 @@ pub struct GraphicsState {
     vertex_index_count: usize,
     vertex_index_buffer: gl::Buffer<u32>,
 
+    hand_carrying_mat: Matrix4<f32>,
+    hand_swinging_mat: Matrix4<f32>,
+
     sword: item::catalog::sword::graphics::GraphicsState,
 }
 
@@ -22,6 +25,8 @@ impl GraphicsState {
         let model: Obj<Vector3<f32>, Vector3<f32>> =
             Obj::read(include_str!(concat!(env!("OUT_DIR"),
                                            "/world/entity/catalog/player/graphics/player.obj"))).unwrap();
+        let hand_carrying_mat = model.metas["Hand (Carrying)"].transform;
+        let hand_swinging_mat = model.metas["Hand (Swinging)"].transform;
 
         let program = Self::new_program();
 
@@ -57,7 +62,12 @@ impl GraphicsState {
         GraphicsState{program, vertex_array,
                       _vertex_position_buffer: vertex_position_buffer,
                       _vertex_normal_buffer: vertex_normal_buffer,
-                      vertex_index_count, vertex_index_buffer, sword}
+                      vertex_index_count, vertex_index_buffer,
+
+                      hand_carrying_mat,
+                      hand_swinging_mat,
+
+                      sword}
     }
 
     fn new_program() -> gl::Program {
@@ -87,6 +97,20 @@ impl GraphicsState {
         gl::uniform(1, vmat);
         gl::uniform(2, mmat);
         gl::uniform(3, light_position);
+
+        self.draw_sword(pmat, vmat, mmat, light_position, player.sword_state);
+    }
+
+    fn draw_sword(&self, pmat: Matrix4<f32>, vmat: Matrix4<f32>,
+                  mut mmat: Matrix4<f32>, light_position: Vector2<f32>,
+                  sword_state: SwordState) {
+        mmat = match sword_state {
+            SwordState::Carrying => mmat * self.hand_carrying_mat,
+            SwordState::Swinging(t) => mmat
+                * self.hand_swinging_mat
+                * Matrix4::from_angle_z(Deg(t * 110.0))
+                * Matrix4::from_translation(Vector3::new(t * 0.3, 0.0, 0.0)),
+        };
 
         gl::draw_elements::<u32>(gl::PrimitiveType::Triangles,
                                  self.vertex_index_count);
