@@ -9,7 +9,7 @@ def export_meta(path):
     with open(path, 'a') as file:
         for object in bpy.context.scene.objects:
             transform = ' '.join(str(component)
-                                 for vector in object.matrix_local
+                                 for vector in object.matrix_world
                                  for component in vector)
             command = 'meta {} {}'.format(transform, object.name)
             print(command, file=file)

@@ -14,8 +14,8 @@ pub struct GraphicsState {
     vertex_index_count: usize,
     vertex_index_buffer: gl::Buffer<u32>,
 
-    hand_carrying_mat: Matrix4<f32>,
-    hand_swinging_mat: Matrix4<f32>,
+    equipment_carrying_mat: Matrix4<f32>,
+    equipment_swinging_mat: Matrix4<f32>,
 
     sword: item::catalog::sword::graphics::GraphicsState,
 }
@@ -25,8 +25,8 @@ impl GraphicsState {
         let model: Obj<Vector3<f32>, Vector3<f32>> =
             Obj::read(include_str!(concat!(env!("OUT_DIR"),
                                            "/world/entity/catalog/player/graphics/player.obj"))).unwrap();
-        let hand_carrying_mat = model.metas["Hand (Carrying)"].transform;
-        let hand_swinging_mat = model.metas["Hand (Swinging)"].transform;
+        let equipment_carrying_mat = model.metas["Equipment (Carrying)"].transform;
+        let equipment_swinging_mat = model.metas["Equipment (Swinging)"].transform;
 
         let program = Self::new_program();
 
@@ -64,8 +64,8 @@ impl GraphicsState {
                       _vertex_normal_buffer: vertex_normal_buffer,
                       vertex_index_count, vertex_index_buffer,
 
-                      hand_carrying_mat,
-                      hand_swinging_mat,
+                      equipment_carrying_mat,
+                      equipment_swinging_mat,
 
                       sword}
     }
@@ -105,9 +105,9 @@ impl GraphicsState {
                   mut mmat: Matrix4<f32>, light_position: Vector2<f32>,
                   sword_state: SwordState) {
         mmat = match sword_state {
-            SwordState::Carrying => mmat * self.hand_carrying_mat,
+            SwordState::Carrying => mmat * self.equipment_carrying_mat,
             SwordState::Swinging(t) => mmat
-                * self.hand_swinging_mat
+                * self.equipment_swinging_mat
                 * Matrix4::from_angle_z(Deg(t * 110.0))
                 * Matrix4::from_translation(Vector3::new(t * 0.3, 0.0, 0.0)),
         };
