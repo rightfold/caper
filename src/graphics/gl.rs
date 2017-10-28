@@ -9,6 +9,7 @@ use gl;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ArrayComponentDataType {
+    UnsignedShort = gl::UNSIGNED_SHORT as isize,
     Float = gl::FLOAT as isize,
 }
 
@@ -61,8 +62,9 @@ pub enum ColorBuffer {
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum DataStoreUsage {
-    StaticDraw = gl::STATIC_DRAW as isize,
-    StreamDraw = gl::STREAM_DRAW as isize,
+    StaticDraw  = gl::STATIC_DRAW  as isize,
+    StreamDraw  = gl::STREAM_DRAW  as isize,
+    DynamicDraw = gl::DYNAMIC_DRAW as isize,
 }
 
 
@@ -178,12 +180,18 @@ impl !Send for VertexArray { }
 
 
 
+pub enum ArrayComponentDataTargetFloat { }
+pub enum ArrayComponentDataTargetInteger { }
+
 pub unsafe trait ArrayComponentData {
+    type Target;
     fn component_count() -> usize;
     fn component_data_type() -> ArrayComponentDataType;
 }
 
 unsafe impl ArrayComponentData for f32 {
+    type Target = ArrayComponentDataTargetFloat;
+
     fn component_count() -> usize {
         1
     }
@@ -194,6 +202,8 @@ unsafe impl ArrayComponentData for f32 {
 }
 
 unsafe impl ArrayComponentData for cgmath::Vector2<f32> {
+    type Target = ArrayComponentDataTargetFloat;
+
     fn component_count() -> usize {
         2
     }
@@ -204,6 +214,8 @@ unsafe impl ArrayComponentData for cgmath::Vector2<f32> {
 }
 
 unsafe impl ArrayComponentData for cgmath::Vector3<f32> {
+    type Target = ArrayComponentDataTargetFloat;
+
     fn component_count() -> usize {
         3
     }
@@ -389,7 +401,7 @@ pub fn vertex_attrib_divisor(index: usize, divisor: usize) {
 }
 
 pub fn vertex_attrib_pointer<T>(index: usize, normalized: bool)
-    where T: ArrayComponentData {
+    where T: ArrayComponentData<Target=ArrayComponentDataTargetFloat> {
     unsafe {
         gl::VertexAttribPointer(index as gl::types::GLuint,
                                 T::component_count() as gl::types::GLint,
@@ -397,5 +409,16 @@ pub fn vertex_attrib_pointer<T>(index: usize, normalized: bool)
                                 normalized as gl::types::GLboolean,
                                 0,
                                 0 as *const c_void);
+    }
+}
+
+pub fn vertex_attrib_i_pointer<T>(index: usize)
+    where T: ArrayComponentData<Target=ArrayComponentDataTargetInteger> {
+    unsafe {
+        gl::VertexAttribIPointer(index as gl::types::GLuint,
+                                 T::component_count() as gl::types::GLint,
+                                 T::component_data_type() as gl::types::GLenum,
+                                 0,
+                                 0 as *const c_void);
     }
 }

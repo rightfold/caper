@@ -55,18 +55,8 @@ fn main() {
     let mut rng = rand::StdRng::new().unwrap();
 
     let mut world = caper::world::World::new(cgmath::Vector2::new(0.0, 0.0));
-    world.map.sectors.insert(cgmath::Vector2::new( 0, -0), caper::world::map::Sector::new());
-    world.map.sectors.insert(cgmath::Vector2::new( 0, -1), caper::world::map::Sector::new());
-    world.map.sectors.insert(cgmath::Vector2::new( 0, -2), caper::world::map::Sector::new());
     world.map.sectors.insert(cgmath::Vector2::new( 0,  0), caper::world::map::Sector::new());
-    world.map.sectors.insert(cgmath::Vector2::new( 0,  1), caper::world::map::Sector::new());
-    world.map.sectors.insert(cgmath::Vector2::new( 0,  2), caper::world::map::Sector::new());
-    world.map.sectors.insert(cgmath::Vector2::new(-1, -0), caper::world::map::Sector::new());
-    world.map.sectors.insert(cgmath::Vector2::new(-1, -1), caper::world::map::Sector::new());
-    world.map.sectors.insert(cgmath::Vector2::new(-1, -2), caper::world::map::Sector::new());
     world.map.sectors.insert(cgmath::Vector2::new(-1,  0), caper::world::map::Sector::new());
-    world.map.sectors.insert(cgmath::Vector2::new(-1,  1), caper::world::map::Sector::new());
-    world.map.sectors.insert(cgmath::Vector2::new(-1,  2), caper::world::map::Sector::new());
     world.spiders.spawn(&mut rng, cgmath::Vector2::new( 0.0,  0.0));
     world.spiders.spawn(&mut rng, cgmath::Vector2::new( 1.0,  1.0));
     world.spiders.spawn(&mut rng, cgmath::Vector2::new( 2.0,  2.0));
@@ -97,7 +87,6 @@ fn main() {
                     }
                 },
                 Event::WindowEvent{event: WindowEvent::KeyboardInput{input, ..}, ..} => {
-                    println!("{:?}", event);
                     keyboard_inputs.push(input);
                 },
                 _ => (),

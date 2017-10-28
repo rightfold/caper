@@ -1,12 +1,12 @@
-#version 330 core
-#extension GL_ARB_explicit_uniform_location : require
-
-#define SECTOR_SIZE 8
+#define SECTOR_SIZE 32
 
 layout(location = 0) in vec2 vertex_position;
+layout(location = 1) in uint tile_material;
 
 layout(location = 0) uniform mat4 world_transform;
 layout(location = 1) uniform ivec2 sector_id;
+
+flat out uint material;
 
 void main() {
   int col = sector_id.x * SECTOR_SIZE + gl_InstanceID % SECTOR_SIZE;
@@ -18,4 +18,6 @@ void main() {
   vec4 tile_position = vec4(x, y, 0.0, 1.0);
 
   gl_Position = world_transform * (tile_position + vec4(vertex_position, 0.0, 1.0));
+
+  material = tile_material;
 }

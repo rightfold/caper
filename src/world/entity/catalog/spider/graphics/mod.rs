@@ -46,28 +46,32 @@ impl GraphicsState {
         gl::bind_vertex_array(&vertex_array);
 
         gl::enable_vertex_attrib_array(0);
-        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer, &vertex_position_buffer);
+        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer,
+                        &vertex_position_buffer);
         gl::vertex_attrib_pointer::<Vector3<f32>>(0, false);
 
         gl::enable_vertex_attrib_array(1);
-        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer, &vertex_normal_buffer);
+        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer,
+                        &vertex_normal_buffer);
         gl::vertex_attrib_pointer::<Vector3<f32>>(1, false);
 
         gl::enable_vertex_attrib_array(2);
-        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer, &model_position_buffer);
+        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer,
+                        &model_position_buffer);
         gl::vertex_attrib_pointer::<Vector2<f32>>(2, false);
         gl::vertex_attrib_divisor(2, 1);
 
         gl::enable_vertex_attrib_array(3);
-        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer, &model_angle_buffer);
+        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer,
+                        &model_angle_buffer);
         gl::vertex_attrib_pointer::<f32>(3, false);
         gl::vertex_attrib_divisor(3, 1);
 
         GraphicsState{program, vertex_array,
                       _vertex_position_buffer: vertex_position_buffer,
                       _vertex_normal_buffer: vertex_normal_buffer,
-                      vertex_index_count, vertex_index_buffer, model_position_buffer,
-                      model_angle_buffer}
+                      vertex_index_count, vertex_index_buffer,
+                      model_position_buffer, model_angle_buffer}
     }
 
     fn new_program() -> gl::Program {
@@ -81,10 +85,12 @@ impl GraphicsState {
                 light_position: Vector2<f32>, spiders: &SpiderSet) {
         gl::bind_vertex_array(&self.vertex_array);
 
-        gl::named_buffer_data(&self.model_position_buffer, entity_field!(spiders, positions),
+        gl::named_buffer_data(&self.model_position_buffer,
+                              entity_field!(spiders, positions),
                               gl::DataStoreUsage::StreamDraw);
 
-        gl::named_buffer_data(&self.model_angle_buffer, entity_field!(spiders, angles),
+        gl::named_buffer_data(&self.model_angle_buffer,
+                              entity_field!(spiders, angles),
                               gl::DataStoreUsage::StreamDraw);
 
         gl::bind_buffer(gl::BufferBindingTarget::ElementArrayBuffer,

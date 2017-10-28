@@ -2,14 +2,16 @@ use std::f32;
 
 use cgmath::{Matrix4, Vector2};
 
+use graphics;
 use graphics::gl;
-use world::map::Map;
+use world::map::{Map, Material};
 
 pub struct GraphicsState {
     program: gl::Program,
     vertex_array: gl::VertexArray,
     vertex_count: usize,
     _vertex_position_buffer: gl::Buffer<Vector2<f32>>,
+    tile_material_buffer: gl::Buffer<Material>,
 }
 
 impl GraphicsState {
@@ -24,6 +26,8 @@ impl GraphicsState {
         gl::named_buffer_data(&vertex_position_buffer, &vertex_positions,
                               gl::DataStoreUsage::StaticDraw);
 
+        let tile_material_buffer = gl::Buffer::new();
+
         let vertex_array = gl::VertexArray::new();
 
         gl::bind_vertex_array(&vertex_array);
@@ -33,8 +37,15 @@ impl GraphicsState {
                         &vertex_position_buffer);
         gl::vertex_attrib_pointer::<Vector2<f32>>(0, false);
 
+        gl::enable_vertex_attrib_array(1);
+        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer,
+                        &tile_material_buffer);
+        gl::vertex_attrib_i_pointer::<Material>(1);
+        gl::vertex_attrib_divisor(1, 1);
+
         GraphicsState{program, vertex_array, vertex_count,
-                      _vertex_position_buffer: vertex_position_buffer}
+                      _vertex_position_buffer: vertex_position_buffer,
+                      tile_material_buffer}
     }
 
     fn generate_model() -> [Vector2<f32>; 8] {
@@ -49,20 +60,10 @@ impl GraphicsState {
     }
 
     fn new_program() -> gl::Program {
-        let vertex_shader = gl::Shader::new(gl::ShaderType::VertexShader);
-        gl::shader_source(&vertex_shader, &[&include_bytes!("map.vert")[..]]);
-        gl::compile_shader(&vertex_shader);
-
-        let fragment_shader = gl::Shader::new(gl::ShaderType::FragmentShader);
-        gl::shader_source(&fragment_shader, &[&include_bytes!("map.frag")[..]]);
-        gl::compile_shader(&fragment_shader);
-
-        let program = gl::Program::new();
-        gl::attach_shader(&program, &vertex_shader);
-        gl::attach_shader(&program, &fragment_shader);
-        gl::link_program(&program);
-
-        program
+        graphics::catalog::make_program(
+            include_bytes!("map.vert"),
+            include_bytes!("map.frag"),
+        )
     }
 
     pub fn draw(&self, world_transform: Matrix4<f32>, map: &Map) {
@@ -74,11 +75,16 @@ impl GraphicsState {
 
         gl::uniform(0, world_transform);
 
-        for (&sector_id, _) in map.sectors.iter() {
+        for (&sector_id, sector) in map.sectors.iter() {
+            gl::named_buffer_data(&self.tile_material_buffer,
+                                  &sector.materials[..],
+                                  gl::DataStoreUsage::DynamicDraw);
+
             gl::uniform(1, sector_id);
 
             gl::draw_arrays_instanced(gl::PrimitiveType::TriangleFan,
-                                      self.vertex_count, 8 * 8);
+                                      self.vertex_count,
+                                      sector.materials.len());
         }
     }
 }
