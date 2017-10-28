@@ -358,16 +358,15 @@ pub fn link_program(program: &Program) {
 
 pub fn shader_source<I>(shader: &Shader, sources: I)
     where I: IntoIterator, I::Item: AsRef<[u8]> {
-    let mut strings = Vec::new();
-    let mut lengths = Vec::new();
+    let mut strings = Vec::<*const gl::types::GLchar>::new();
+    let mut lengths = Vec::<gl::types::GLint>::new();
     for source in sources {
-        strings.push(source.as_ref().as_ptr());
-        lengths.push(source.as_ref().len());
+        strings.push(source.as_ref().as_ptr() as *const gl::types::GLchar);
+        lengths.push(source.as_ref().len() as gl::types::GLint);
     }
     unsafe {
         gl::ShaderSource(shader.handle(), strings.len() as gl::types::GLsizei,
-                         strings.as_ptr() as *const *const gl::types::GLchar,
-                         lengths.as_ptr() as *const gl::types::GLint);
+                         strings.as_ptr(), lengths.as_ptr());
     }
 }
 

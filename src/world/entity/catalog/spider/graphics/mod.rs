@@ -1,5 +1,6 @@
 use cgmath::{Matrix4, Rad, Vector2, Vector3};
 
+use graphics;
 use graphics::gl;
 use graphics::obj::Obj;
 use world::entity::catalog::spider::SpiderSet;
@@ -70,20 +71,10 @@ impl GraphicsState {
     }
 
     fn new_program() -> gl::Program {
-        let vertex_shader = gl::Shader::new(gl::ShaderType::VertexShader);
-        gl::shader_source(&vertex_shader, &[&include_bytes!("spider.vert")[..]]);
-        gl::compile_shader(&vertex_shader);
-
-        let fragment_shader = gl::Shader::new(gl::ShaderType::FragmentShader);
-        gl::shader_source(&fragment_shader, &[&include_bytes!("spider.frag")[..]]);
-        gl::compile_shader(&fragment_shader);
-
-        let program = gl::Program::new();
-        gl::attach_shader(&program, &vertex_shader);
-        gl::attach_shader(&program, &fragment_shader);
-        gl::link_program(&program);
-
-        program
+        graphics::catalog::make_program(
+            include_bytes!("spider.vert"),
+            include_bytes!("spider.frag"),
+        )
     }
 
     pub fn draw(&self, world_transform: Matrix4<f32>,
