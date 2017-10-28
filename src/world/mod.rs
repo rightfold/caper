@@ -21,7 +21,7 @@ impl World {
     }
 
     pub fn camera_position(&self) -> Vector3<f32> {
-        self.player.position.extend(0.0) + Vector3::new(0.0, -8.0, 4.0)
+        self.player.position.extend(0.0) + Vector3::new(0.0, -7.0, 9.0)
     }
 
     pub fn player_position(&self) -> Vector2<f32> {

@@ -20,7 +20,7 @@ void main() {
                               vec4(                0,                0, 1, 0),
                               vec4( model_position.x, model_position.y, 0, 1));
   mat4 world_model_transform = world_transform * model_transform;
-  vec3 world_model_normal = (world_model_transform * vec4(vertex_normal, 0)).xyz;
+  vec3 world_model_normal = (world_model_transform * vec4(vertex_normal, 0.0)).xyz;
 
   gl_Position = world_model_transform * vec4(vertex_position, 1.0);
 
