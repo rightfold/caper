@@ -69,6 +69,7 @@ fn main() {
     let mut running = true;
     let mut input = caper::input::Input::new();
     while running {
+        let mut mouse_inputs = Vec::new();
         let mut keyboard_inputs = Vec::new();
         events_loop.poll_events(|event| {
             match event {
@@ -86,6 +87,9 @@ fn main() {
                                      h as gl::types::GLsizei);
                     }
                 },
+                Event::WindowEvent{event: WindowEvent::MouseInput{state, button, ..}, ..} => {
+                    mouse_inputs.push((state, button));
+                },
                 Event::WindowEvent{event: WindowEvent::KeyboardInput{input, ..}, ..} => {
                     keyboard_inputs.push(input);
                 },
@@ -97,6 +101,9 @@ fn main() {
         let dt = (current_simulation - previous_simulation) as f32 / 1000000.0;
         previous_simulation = current_simulation;
 
+        for mouse_input in mouse_inputs.iter() {
+            input.mouse_input(mouse_input);
+        }
         for keyboard_input in keyboard_inputs.iter() {
             input.keyboard_input(keyboard_input);
         }

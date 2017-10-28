@@ -1,4 +1,4 @@
-use glutin::{ElementState, KeyboardInput};
+use glutin::{ElementState, MouseButton, KeyboardInput};
 
 pub struct Input {
     pub move_north: bool,
@@ -19,6 +19,17 @@ impl Input {
         }
     }
 
+    pub fn mouse_input(&mut self, input: &(ElementState, MouseButton)) {
+        let pressed = match input.0 {
+            ElementState::Pressed => true,
+            ElementState::Released => false,
+        };
+        match input.1 {
+            MouseButton::Left => self.attack = pressed,
+            _ => (),
+        }
+    }
+
     pub fn keyboard_input(&mut self, input: &KeyboardInput) {
         let pressed = match input.state {
             ElementState::Pressed => true,
@@ -29,7 +40,6 @@ impl Input {
             0x1F /*   S   */ => self.move_south = pressed,
             0x1E /*   A   */ => self.move_west  = pressed,
             0x20 /*   D   */ => self.move_east  = pressed,
-            0x39 /* space */ => self.attack     = pressed,
             _ => (),
         }
     }
