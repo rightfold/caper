@@ -6,9 +6,6 @@ use graphics::obj::Obj;
 const INITIAL_HEALTH_BASE: f32 = 10.0;
 const INITIAL_HEALTH_CHANCE: (f32, f32) = (-3.0, 5.0);
 
-const INITIAL_ALTITUDE_BASE: f32 = 0.7;
-const INITIAL_ALTITUDE_CHANCE: (f32, f32) = (-0.15, 0.15);
-
 monster_set! {
     GasSporeSet,
 
@@ -16,16 +13,16 @@ monster_set! {
 
     attribute healths: f32,
 
-    visible(location = 2) positions: Vector2<f32>,
-    visible(location = 3) angles: Rad<f32>,
-    visible(location = 4) altitudes: f32,
+    visible(location = 2) positions:        Vector2<f32>,
+    visible(location = 3) angles:           Rad<f32>,
+    visible(location = 4) altitude_arcsins: f32,
 
     spawn(rng, position) {
-        healths:   gen_range_base(rng, INITIAL_HEALTH_BASE, INITIAL_HEALTH_CHANCE),
+        healths: gen_range_base(rng, INITIAL_HEALTH_BASE, INITIAL_HEALTH_CHANCE),
 
-        positions: position,
-        angles:    rng.gen(),
-        altitudes: gen_range_base(rng, INITIAL_ALTITUDE_BASE, INITIAL_ALTITUDE_CHANCE),
+        positions:        position,
+        angles:           rng.gen(),
+        altitude_arcsins: rng.gen_range(-1.0, 1.0),
     },
 
     graphics {
