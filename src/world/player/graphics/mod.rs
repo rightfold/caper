@@ -24,7 +24,7 @@ impl GraphicsState {
     pub fn new() -> Self {
         let model: Obj<Vector3<f32>, Vector3<f32>> =
             Obj::read(include_str!(concat!(env!("OUT_DIR"),
-                                           "/world/entity/catalog/player/graphics/player.obj"))).unwrap();
+                                           "/world/player/graphics/player.obj"))).unwrap();
         let equipment_carrying_mat = model.metas["Equipment (Carrying)"].transform;
         let equipment_swinging_mat = model.metas["Equipment (Swinging)"].transform;
 

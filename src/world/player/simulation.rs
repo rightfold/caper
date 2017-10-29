@@ -75,8 +75,8 @@ impl SimulationState {
         macro_rules! attack {
             ($($singular:ident : $plural:ident : $type:ident,)*) => {
                 $({
-                    let positions = entity_field!(world.$plural, positions).iter();
-                    let healths = entity_field!(world.$plural, mut healths).iter_mut();
+                    let positions = monster_field!(world.$plural, positions).iter();
+                    let healths = monster_field!(world.$plural, mut healths).iter_mut();
                     for (&position, health) in positions.zip(healths) {
                         if world.player.position.distance(position) < ATTACK_RANGE {
                             *health -= dt * ATTACK_DAMAGE;
@@ -86,6 +86,6 @@ impl SimulationState {
             };
         }
 
-        with_each_entity_set!(attack);
+        with_each_monster_set!(attack);
     }
 }

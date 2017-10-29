@@ -2,7 +2,7 @@ use cgmath::{Angle, Rad, Vector2};
 use rand::Rng;
 
 use world::World;
-use world::entity::catalog::spider::*;
+use world::monster::catalog::spider::*;
 
 const MOVEMENT_SPEED: f32 = 0.0006;
 const ROTATION_SPEED: Rad<f32> = Rad(0.0015);
@@ -27,9 +27,9 @@ impl SimulationState {
     }
 
     fn simulate_movements(dt: f32, spiders: &mut SpiderSet) {
-        let positions = entity_field!(spiders, mut positions).iter_mut();
-        let angles = entity_field!(spiders, mut angles).iter();
-        let actions = entity_field!(spiders, mut actions).iter();
+        let positions = monster_field!(spiders, mut positions).iter_mut();
+        let angles = monster_field!(spiders, mut angles).iter();
+        let actions = monster_field!(spiders, mut actions).iter();
         for (position, (angle, action)) in positions.zip(angles.zip(actions)) {
             *position = Self::simulate_movement(dt, *position, *angle, action);
         }
@@ -48,8 +48,8 @@ impl SimulationState {
     }
 
     fn simulate_rotations(dt: f32, spiders: &mut SpiderSet) {
-        let angles = entity_field!(spiders, mut angles).iter_mut();
-        let actions = entity_field!(spiders, mut actions).iter_mut();
+        let angles = monster_field!(spiders, mut angles).iter_mut();
+        let actions = monster_field!(spiders, mut actions).iter_mut();
         for (angle, action) in angles.zip(actions) {
             *angle = Self::simulate_rotation(dt, *angle, action);
         }
@@ -74,7 +74,7 @@ impl SimulationState {
         self.since_action_change += dt;
         while self.since_action_change > ACTION_CHANGE_INTERVAL {
             self.since_action_change -= ACTION_CHANGE_INTERVAL;
-            for action in entity_field!(spiders, mut actions).iter_mut() {
+            for action in monster_field!(spiders, mut actions).iter_mut() {
                 *action = Self::simulate_action_change(rng, action);
             }
         }

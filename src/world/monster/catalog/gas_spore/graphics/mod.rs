@@ -1,6 +1,6 @@
 use cgmath::{Matrix4, Vector2};
 
-use world::entity::catalog::gas_spore::*;
+use world::monster::catalog::gas_spore::*;
 
 pub struct GraphicsState {
 }

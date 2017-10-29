@@ -11,7 +11,7 @@ macro_rules! world {
 
             pub player: player::Player,
 
-            $(pub $plural: entity::catalog::$singular::$type,)*
+            $(pub $plural: monster::catalog::$singular::$type,)*
         }
 
         impl World {
@@ -21,7 +21,7 @@ macro_rules! world {
 
                     player: player::Player::new(player_position),
 
-                    $($plural: entity::catalog::$singular::$type::new(),)*
+                    $($plural: monster::catalog::$singular::$type::new(),)*
                 }
             }
 
@@ -44,7 +44,7 @@ macro_rules! world {
 
                 player: player::graphics::GraphicsState,
 
-                $($plural: entity::catalog::$singular::graphics::GraphicsState,)*
+                $($plural: monster::catalog::$singular::graphics::GraphicsState,)*
             }
 
             impl GraphicsState {
@@ -54,7 +54,7 @@ macro_rules! world {
 
                         player: player::graphics::GraphicsState::new(),
 
-                        $($plural: entity::catalog::$singular::graphics::GraphicsState::new(),)*
+                        $($plural: monster::catalog::$singular::graphics::GraphicsState::new(),)*
                     }
                 }
 
@@ -83,7 +83,7 @@ macro_rules! world {
             pub struct SimulationState {
                 player: player::simulation::SimulationState,
 
-                $($plural: entity::catalog::$singular::simulation::SimulationState,)*
+                $($plural: monster::catalog::$singular::simulation::SimulationState,)*
             }
 
             impl SimulationState {
@@ -91,7 +91,7 @@ macro_rules! world {
                     SimulationState{
                         player: player::simulation::SimulationState::new(),
 
-                        $($plural: entity::catalog::$singular::simulation::SimulationState::new(),)*
+                        $($plural: monster::catalog::$singular::simulation::SimulationState::new(),)*
                     }
                 }
 
@@ -104,9 +104,9 @@ macro_rules! world {
     };
 }
 
-with_each_entity_set!(world);
+with_each_monster_set!(world);
 
-pub mod entity;
 pub mod item;
 pub mod map;
+pub mod monster;
 pub mod player;

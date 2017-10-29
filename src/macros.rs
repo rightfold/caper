@@ -1,19 +1,19 @@
-/// Macro for defining a despawn method that calls `EntitySetBase::new` and
+/// Macro for defining a despawn method that calls `MonsterSetBase::new` and
 /// `Vec::new` appropriately.
 #[macro_export]
-macro_rules! entity_set_new_method_body {
+macro_rules! monster_set_new_method_body {
     ($Self:ident, $($name:ident,)*) => {
         $Self{
-            base: $crate::world::entity::collections::EntitySetBase::new(),
+            base: $crate::world::monster::collections::MonsterSetBase::new(),
             $($name: Vec::new(),)*
         }
     };
 }
 
-/// Macro for defining a spawn method that calls `EntitySetBase::spawn` and
+/// Macro for defining a spawn method that calls `MonsterSetBase::spawn` and
 /// `Vec::push` appropriately.
 #[macro_export]
-macro_rules! entity_set_spawn_method_body {
+macro_rules! monster_set_spawn_method_body {
     ($self:expr, $($name:ident : $value:expr,)*) => {
         {
             let id = $self.base.prepare_spawn();
@@ -23,10 +23,10 @@ macro_rules! entity_set_spawn_method_body {
     };
 }
 
-/// Macro for defining a despawn method that calls `EntitySetBase::despawn` and
+/// Macro for defining a despawn method that calls `MonsterSetBase::despawn` and
 /// `Vec::swap_remove` appropriately.
 #[macro_export]
-macro_rules! entity_set_despawn_method_body {
+macro_rules! monster_set_despawn_method_body {
     ($self:expr, $id:expr, $($name:ident,)*) => {
         {
             let index = $self.base.prepare_despawn($id);
@@ -38,7 +38,7 @@ macro_rules! entity_set_despawn_method_body {
 /// Macro for defining a type with a vector for each given field, as well as
 /// `new`, `despawn`, and getter methods.
 #[macro_export]
-macro_rules! entity_set {
+macro_rules! monster_set {
     ($name:ident, $id:ident, $($field_name:ident : $field_type:ty,)*) => {
         #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
         pub struct $id(usize);
@@ -50,17 +50,17 @@ macro_rules! entity_set {
 
         #[derive(Debug)]
         pub struct $name {
-            base: $crate::world::entity::collections::EntitySetBase<$id>,
+            base: $crate::world::monster::collections::MonsterSetBase<$id>,
             $(#[doc(hidden)] pub $field_name: Vec<$field_type>,)*
         }
 
         impl $name {
             pub fn new() -> Self {
-                entity_set_new_method_body!($name, $($field_name,)*)
+                monster_set_new_method_body!($name, $($field_name,)*)
             }
 
             pub fn despawn(&mut self, id: $id) {
-                entity_set_despawn_method_body!(self, id, $($field_name,)*);
+                monster_set_despawn_method_body!(self, id, $($field_name,)*);
             }
 
             #[inline(always)]
@@ -77,7 +77,7 @@ macro_rules! entity_set {
 }
 
 #[macro_export]
-macro_rules! entity_field {
+macro_rules! monster_field {
     ($self:expr, $field:ident) => {
         &$self.$field[..]
     };
@@ -87,7 +87,7 @@ macro_rules! entity_field {
 }
 
 #[macro_export]
-macro_rules! with_each_entity_set {
+macro_rules! with_each_monster_set {
     ($macro:ident) => {
         $macro!(
             spider    : spiders    : SpiderSet,
@@ -102,7 +102,7 @@ macro_rules! simulate_deaths {
         let set = $set;
         let dead_ids = {
             let ids = set.ids().iter();
-            let healths = entity_field!(set, healths).iter();
+            let healths = monster_field!(set, healths).iter();
             ids.zip(healths)
                 .filter(|&(_, &health)| health < 0.0)
                 .map(|(&id, _)| id)

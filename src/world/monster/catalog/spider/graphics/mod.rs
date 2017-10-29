@@ -3,7 +3,7 @@ use cgmath::{Matrix4, Rad, Vector2, Vector3};
 use graphics;
 use graphics::gl;
 use graphics::obj::Obj;
-use world::entity::catalog::spider::SpiderSet;
+use world::monster::catalog::spider::SpiderSet;
 
 pub struct GraphicsState {
     program: gl::Program,
@@ -20,7 +20,7 @@ impl GraphicsState {
     pub fn new() -> Self {
         let model: Obj<Vector3<f32>, Vector3<f32>> =
             Obj::read(include_str!(concat!(env!("OUT_DIR"),
-                                           "/world/entity/catalog/spider/graphics/spider.obj"))).unwrap();
+                                           "/world/monster/catalog/spider/graphics/spider.obj"))).unwrap();
 
         let program = Self::new_program();
 
@@ -87,11 +87,11 @@ impl GraphicsState {
         gl::bind_vertex_array(&self.vertex_array);
 
         gl::named_buffer_data(&self.model_position_buffer,
-                              entity_field!(spiders, positions),
+                              monster_field!(spiders, positions),
                               gl::DataStoreUsage::StreamDraw);
 
         gl::named_buffer_data(&self.model_angle_buffer,
-                              entity_field!(spiders, angles),
+                              monster_field!(spiders, angles),
                               gl::DataStoreUsage::StreamDraw);
 
         gl::bind_buffer(gl::BufferBindingTarget::ElementArrayBuffer,

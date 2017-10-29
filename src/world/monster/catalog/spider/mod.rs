@@ -6,7 +6,7 @@ use chance::gen_range_base;
 const INITIAL_HEALTH_BASE: f32 = 20.0;
 const INITIAL_HEALTH_CHANCE: (f32, f32) = (-5.0, 5.0);
 
-entity_set!(
+monster_set!(
     SpiderSet,
     SpiderId,
     positions: Vector2<f32>,
@@ -41,7 +41,7 @@ impl Rand for RotationAction {
 
 impl SpiderSet {
     pub fn spawn<R: Rng>(&mut self, rng: &mut R, position: Vector2<f32>) -> SpiderId {
-        entity_set_spawn_method_body!(
+        monster_set_spawn_method_body!(
             self,
             positions: position,
             angles:    rng.gen(),
