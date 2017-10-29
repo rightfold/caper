@@ -1,8 +1,6 @@
 #define LIGHT_HEIGHT 1.5
 #define LIGHT_INTENSITY 2.0
 
-#define SECTOR_SIZE 32
-
 layout(location = 0) in vec2 vertex_position;
 layout(location = 1) in uint tile_material;
 
@@ -16,8 +14,8 @@ flat out uint material;
 out float brightness;
 
 void main() {
-  int col = sector_id.x * SECTOR_SIZE + gl_InstanceID % SECTOR_SIZE;
-  int row = sector_id.y * SECTOR_SIZE + gl_InstanceID / SECTOR_SIZE;
+  int col = sector_id.x * CAPER_MAP_SECTOR_SIZE + gl_InstanceID % CAPER_MAP_SECTOR_SIZE;
+  int row = sector_id.y * CAPER_MAP_SECTOR_SIZE + gl_InstanceID / CAPER_MAP_SECTOR_SIZE;
   vec2 tile = vec2(sqrt(3.0) * (float(col) + 0.5 * float(row & 1)),
                    3.0 / 2.0 * float(row));
 

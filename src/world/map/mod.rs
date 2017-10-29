@@ -5,7 +5,7 @@ use cgmath::{Matrix4, Vector2};
 
 use graphics::gl;
 
-pub const SECTOR_SIZE: usize = 32;
+pub const SECTOR_SIZE: usize = 8;
 
 #[derive(Debug)]
 pub struct Map {

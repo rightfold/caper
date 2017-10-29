@@ -1,4 +1,5 @@
 use graphics::gl;
+use world::map;
 
 pub fn make_program(vertex_shader_source: &[u8],
                     fragment_shader_source: &[u8]) -> gl::Program {
@@ -6,6 +7,7 @@ pub fn make_program(vertex_shader_source: &[u8],
     gl::shader_source(&vert_shader, &[
         &b"#version 330 core\n"[..],
         &b"#extension GL_ARB_explicit_uniform_location : require\n"[..],
+        format!("#define CAPER_MAP_SECTOR_SIZE {}\n", map::SECTOR_SIZE).as_bytes(),
         vertex::DIFFUSE_LIGHTING,
         vertex_shader_source,
     ]);
