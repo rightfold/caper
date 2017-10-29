@@ -98,6 +98,7 @@ macro_rules! world {
                 pub fn simulate<R: Rng>(&mut self, rng: &mut R, dt: f32, input: &Input, world: &mut World) {
                     self.player.simulate(dt, input, world);
                     $(self.$plural.simulate(rng, dt, world);)*
+                    $(monster::despawn_dead(&mut world.$plural);)*
                 }
             }
         }

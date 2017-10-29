@@ -23,7 +23,6 @@ impl SimulationState {
         Self::simulate_movements(dt, &mut world.spiders);
         Self::simulate_rotations(dt, &mut world.spiders);
         self.simulate_action_changes(rng, dt, &mut world.spiders);
-        simulate_deaths!(&mut world.spiders);
     }
 
     fn simulate_movements(dt: f32, spiders: &mut SpiderSet) {

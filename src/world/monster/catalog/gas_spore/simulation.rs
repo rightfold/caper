@@ -10,6 +10,6 @@ impl SimulationState {
         SimulationState{}
     }
 
-    pub fn simulate<R: Rng>(&mut self, rng: &mut R, dt: f32, world: &mut World) {
+    pub fn simulate<R: Rng>(&mut self, _rng: &mut R, _dt: f32, _world: &mut World) {
     }
 }

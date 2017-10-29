@@ -10,8 +10,8 @@ impl GraphicsState {
         GraphicsState{}
     }
 
-    pub fn draw(&self, pmat: Matrix4<f32>, vmat: Matrix4<f32>,
-                mmat: Matrix4<f32>, light_position: Vector2<f32>,
-                gas_spores: &GasSporeSet) {
+    pub fn draw(&self, _pmat: Matrix4<f32>, _vmat: Matrix4<f32>,
+                _mmat: Matrix4<f32>, _light_position: Vector2<f32>,
+                _gas_spores: &GasSporeSet) {
     }
 }

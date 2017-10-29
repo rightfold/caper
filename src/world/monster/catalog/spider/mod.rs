@@ -2,6 +2,7 @@ use cgmath::{Rad, Vector2};
 use rand::{Rand, Rng};
 
 use chance::gen_range_base;
+use world::monster::MonsterSet;
 
 const INITIAL_HEALTH_BASE: f32 = 20.0;
 const INITIAL_HEALTH_CHANCE: (f32, f32) = (-5.0, 5.0);
@@ -14,6 +15,14 @@ monster_set!(
     healths:   f32,
     actions:   Action,
 );
+
+impl MonsterSet for SpiderSet {
+    type Id = SpiderId;
+    fn ids(&self) -> &[SpiderId] { self.ids() }
+    fn positions(&self) -> &[Vector2<f32>] { monster_field!(self, positions) }
+    fn healths(&self) -> &[f32] { monster_field!(self, healths) }
+    fn despawn(&mut self, id: SpiderId) { self.despawn(id) }
+}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Action {

@@ -95,21 +95,3 @@ macro_rules! with_each_monster_set {
         );
     };
 }
-
-#[macro_export]
-macro_rules! simulate_deaths {
-    ($set:expr) => {{
-        let set = $set;
-        let dead_ids = {
-            let ids = set.ids().iter();
-            let healths = monster_field!(set, healths).iter();
-            ids.zip(healths)
-                .filter(|&(_, &health)| health < 0.0)
-                .map(|(&id, _)| id)
-                .collect::<Vec<_>>()
-        };
-        for id in dead_ids {
-            set.despawn(id);
-        }
-    }};
-}
