@@ -10,6 +10,8 @@ pub struct World {
 
     pub spiders: monster::spider::SpiderSet,
     pub gas_spores: monster::gas_spore::GasSporeSet,
+
+    pub camera_target: Vector2<f32>,
 }
 
 impl World {
@@ -21,17 +23,15 @@ impl World {
 
             spiders: monster::spider::SpiderSet::new(),
             gas_spores: monster::gas_spore::GasSporeSet::new(),
+
+            camera_target: Vector2::new(0.0, 0.0),
         }
     }
 
     pub fn draw(&self, pmat: Matrix4<f32>) {
-        let camera_position =
-            self.player.position.extend(0.0)
-            + Vector3::new(0.0, -7.0, 9.0);
-
         let vmat = Matrix4::look_at(
-            Point3::from_vec(camera_position),
-            Point3::from_vec(self.player.position.extend(0.0)),
+            Point3::from_vec(self.camera_target.extend(0.0) + Vector3::new(0.0, -6.0, 8.0)),
+            Point3::from_vec(self.camera_target.extend(0.0)),
             Vector3::new(0.0, 0.0, 1.0),
         );
 

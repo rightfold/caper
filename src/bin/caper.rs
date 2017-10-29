@@ -31,7 +31,7 @@ fn main() {
     let mut events_loop = EventsLoop::new();
     let window_builder = WindowBuilder::new()
         .with_title("Caper")
-        .with_dimensions(768, 768);
+        .with_dimensions(1920, 1080);
     let context_builder = ContextBuilder::new()
         .with_vsync(true);
     let window = GlWindow::new(window_builder, context_builder, &events_loop)
@@ -47,12 +47,8 @@ fn main() {
         gl::DebugMessageCallback(log, ptr::null());
     }
 
-    let pmat = cgmath::perspective(
-        cgmath::Deg(45.0),
-        768.0 / 768.0,
-        0.1,
-        100.0,
-    );
+    let mut width = 1920.0;
+    let mut height = 1080.0;
 
     let mut rng = rand::StdRng::new().unwrap();
 
@@ -80,6 +76,8 @@ fn main() {
                 },
                 Event::WindowEvent{event: WindowEvent::Resized(w, h), ..} => {
                     println!("{:?}", event);
+                    width = w as f32;
+                    height = h as f32;
                     window.resize(w, h);
                     unsafe {
                         gl::Viewport(0 as gl::types::GLint,
@@ -97,6 +95,13 @@ fn main() {
                 _ => (),
             }
         });
+
+        let pmat = cgmath::perspective(
+            cgmath::Deg(45.0),
+            width / height,
+            0.1,
+            100.0,
+        );
 
         let current_simulation = time::precise_time_ns();
         let dt = (current_simulation - previous_simulation) as f32 / 1000000.0;
