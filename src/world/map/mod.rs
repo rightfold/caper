@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fmt;
 
-use cgmath::Vector2;
+use cgmath::{Matrix4, Vector2};
 
 use graphics::gl;
 
@@ -9,14 +9,23 @@ pub const SECTOR_SIZE: usize = 32;
 
 #[derive(Debug)]
 pub struct Map {
+    graphics: graphics::Graphics,
+
     pub sectors: HashMap<Vector2<i32>, Sector>,
 }
 
 impl Map {
     pub fn new() -> Self {
         Map{
+            graphics: graphics::Graphics::new(),
+
             sectors: HashMap::new(),
         }
+    }
+
+    pub fn draw(&self, pmat: Matrix4<f32>, vmat: Matrix4<f32>,
+                mmat: Matrix4<f32>, light_position: Vector2<f32>) {
+        self.graphics.draw(self, pmat, vmat, mmat, light_position);
     }
 }
 
@@ -64,4 +73,4 @@ unsafe impl gl::ArrayComponentData for Material {
 
 unsafe impl gl::BufferData for Material { }
 
-pub mod graphics;
+mod graphics;

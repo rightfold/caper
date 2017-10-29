@@ -201,6 +201,18 @@ unsafe impl ArrayComponentData for f32 {
     }
 }
 
+unsafe impl ArrayComponentData for cgmath::Rad<f32> {
+    type Target = ArrayComponentDataTargetFloat;
+
+    fn component_count() -> usize {
+        1
+    }
+
+    fn component_data_type() -> ArrayComponentDataType {
+        ArrayComponentDataType::Float
+    }
+}
+
 unsafe impl ArrayComponentData for cgmath::Vector2<f32> {
     type Target = ArrayComponentDataTargetFloat;
 

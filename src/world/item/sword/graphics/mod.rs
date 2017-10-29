@@ -4,7 +4,8 @@ use graphics;
 use graphics::gl;
 use graphics::obj::Obj;
 
-pub struct GraphicsState {
+#[derive(Debug)]
+pub struct Graphics {
     program: gl::Program,
     vertex_array: gl::VertexArray,
     _vertex_position_buffer: gl::Buffer<Vector3<f32>>,
@@ -13,7 +14,7 @@ pub struct GraphicsState {
     vertex_index_buffer: gl::Buffer<u32>,
 }
 
-impl GraphicsState {
+impl Graphics {
     pub fn new() -> Self {
         let model: Obj<Vector3<f32>, Vector3<f32>> =
             Obj::read(include_str!(concat!(env!("OUT_DIR"),
@@ -48,10 +49,10 @@ impl GraphicsState {
                         &vertex_normal_buffer);
         gl::vertex_attrib_pointer::<Vector3<f32>>(1, false);
 
-        GraphicsState{program, vertex_array,
-                      _vertex_position_buffer: vertex_position_buffer,
-                      _vertex_normal_buffer: vertex_normal_buffer,
-                      vertex_index_count, vertex_index_buffer}
+        Graphics{program, vertex_array,
+                 _vertex_position_buffer: vertex_position_buffer,
+                 _vertex_normal_buffer: vertex_normal_buffer,
+                 vertex_index_count, vertex_index_buffer}
     }
 
     fn new_program() -> gl::Program {

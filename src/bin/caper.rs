@@ -13,6 +13,8 @@ use std::str;
 
 use glutin::{ContextBuilder, Event, EventsLoop, GlContext, GlWindow, WindowBuilder, WindowEvent};
 
+use caper::world::monster::MonsterSet;
+
 extern "system" fn log(_source: gl::types::GLenum,
                        _type: gl::types::GLenum,
                        _id: gl::types::GLuint,
@@ -54,16 +56,13 @@ fn main() {
 
     let mut rng = rand::StdRng::new().unwrap();
 
-    let mut world = caper::world::World::new(cgmath::Vector2::new(0.0, 0.0));
+    let mut world = caper::world::World::new();
     world.map.sectors.insert(cgmath::Vector2::new( 0,  0), caper::world::map::Sector::new());
     world.map.sectors.insert(cgmath::Vector2::new(-1,  0), caper::world::map::Sector::new());
     world.spiders.spawn(&mut rng, cgmath::Vector2::new( 0.0,  0.0));
     world.spiders.spawn(&mut rng, cgmath::Vector2::new( 1.0,  1.0));
     world.spiders.spawn(&mut rng, cgmath::Vector2::new( 2.0,  2.0));
     world.spiders.spawn(&mut rng, cgmath::Vector2::new( 3.0,  3.0));
-
-    let mut simulation_state = caper::world::simulation::SimulationState::new();
-    let graphics_state = caper::world::graphics::GraphicsState::new();
 
     let mut previous_simulation = time::precise_time_ns();
     let mut running = true;
@@ -107,10 +106,10 @@ fn main() {
         for keyboard_input in keyboard_inputs.iter() {
             input.keyboard_input(keyboard_input);
         }
-        simulation_state.simulate(&mut rng, dt, &input, &mut world);
+        caper::simulation::simulate(&mut world, &input, &mut rng, dt);
 
         unsafe { gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT); }
-        graphics_state.draw(pmat, &world);
+        world.draw(pmat);
         window.swap_buffers().unwrap();
     }
 }

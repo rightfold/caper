@@ -6,7 +6,8 @@ use graphics;
 use graphics::gl;
 use world::map::{Map, Material};
 
-pub struct GraphicsState {
+#[derive(Debug)]
+pub struct Graphics {
     program: gl::Program,
     vertex_array: gl::VertexArray,
     vertex_count: usize,
@@ -14,7 +15,7 @@ pub struct GraphicsState {
     tile_material_buffer: gl::Buffer<Material>,
 }
 
-impl GraphicsState {
+impl Graphics {
     pub fn new() -> Self {
         let vertex_positions = Self::generate_model();
 
@@ -43,9 +44,9 @@ impl GraphicsState {
         gl::vertex_attrib_i_pointer::<Material>(1);
         gl::vertex_attrib_divisor(1, 1);
 
-        GraphicsState{program, vertex_array, vertex_count,
-                      _vertex_position_buffer: vertex_position_buffer,
-                      tile_material_buffer}
+        Graphics{program, vertex_array, vertex_count,
+                 _vertex_position_buffer: vertex_position_buffer,
+                 tile_material_buffer}
     }
 
     fn generate_model() -> [Vector2<f32>; 8] {
@@ -66,8 +67,8 @@ impl GraphicsState {
         )
     }
 
-    pub fn draw(&self, pmat: Matrix4<f32>, vmat: Matrix4<f32>,
-                mmat: Matrix4<f32>, light_position: Vector2<f32>, map: &Map) {
+    pub fn draw(&self, map: &Map, pmat: Matrix4<f32>, vmat: Matrix4<f32>,
+                mmat: Matrix4<f32>, light_position: Vector2<f32>) {
         gl::bind_vertex_array(&self.vertex_array);
 
         gl::draw_buffer(gl::ColorBuffer::Back);

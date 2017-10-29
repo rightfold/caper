@@ -6,7 +6,8 @@ use graphics::obj::Obj;
 use world::item;
 use world::player::*;
 
-pub struct GraphicsState {
+#[derive(Debug)]
+pub struct Graphics {
     program: gl::Program,
     vertex_array: gl::VertexArray,
     _vertex_position_buffer: gl::Buffer<Vector3<f32>>,
@@ -17,10 +18,10 @@ pub struct GraphicsState {
     equipment_carrying_mat: Matrix4<f32>,
     equipment_swinging_mat: Matrix4<f32>,
 
-    sword: item::catalog::sword::graphics::GraphicsState,
+    sword: item::sword::graphics::Graphics,
 }
 
-impl GraphicsState {
+impl Graphics {
     pub fn new() -> Self {
         let model: Obj<Vector3<f32>, Vector3<f32>> =
             Obj::read(include_str!(concat!(env!("OUT_DIR"),
@@ -57,17 +58,17 @@ impl GraphicsState {
                         &vertex_normal_buffer);
         gl::vertex_attrib_pointer::<Vector3<f32>>(1, false);
 
-        let sword = item::catalog::sword::graphics::GraphicsState::new();
+        let sword = item::sword::graphics::Graphics::new();
 
-        GraphicsState{program, vertex_array,
-                      _vertex_position_buffer: vertex_position_buffer,
-                      _vertex_normal_buffer: vertex_normal_buffer,
-                      vertex_index_count, vertex_index_buffer,
+        Graphics{program, vertex_array,
+                 _vertex_position_buffer: vertex_position_buffer,
+                 _vertex_normal_buffer: vertex_normal_buffer,
+                 vertex_index_count, vertex_index_buffer,
 
-                      equipment_carrying_mat,
-                      equipment_swinging_mat,
+                 equipment_carrying_mat,
+                 equipment_swinging_mat,
 
-                      sword}
+                 sword}
     }
 
     fn new_program() -> gl::Program {
@@ -77,9 +78,8 @@ impl GraphicsState {
         )
     }
 
-    pub fn draw(&self, pmat: Matrix4<f32>, vmat: Matrix4<f32>,
-                mut mmat: Matrix4<f32>, light_position: Vector2<f32>,
-                player: &Player) {
+    pub fn draw(&self, player: &Player, pmat: Matrix4<f32>, vmat: Matrix4<f32>,
+                mut mmat: Matrix4<f32>, light_position: Vector2<f32>) {
         mmat = mmat
             * Matrix4::from_translation(player.position.extend(0.0))
             * Matrix4::from_angle_z(player.angle);
