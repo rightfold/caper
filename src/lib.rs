@@ -11,4 +11,5 @@ pub mod chance;
 pub mod graphics;
 pub mod input;
 pub mod simulation;
+pub mod timing;
 pub mod world;
