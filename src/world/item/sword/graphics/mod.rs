@@ -18,7 +18,7 @@ impl Graphics {
     pub fn new() -> Self {
         let model: Obj<Vector3<f32>, Vector3<f32>> =
             Obj::read(include_str!(concat!(env!("OUT_DIR"),
-                                           "/world/item/catalog/sword/graphics/sword.obj"))).unwrap();
+                                           "/world/item/sword/graphics/sword.obj"))).unwrap();
 
         let program = Self::new_program();
 

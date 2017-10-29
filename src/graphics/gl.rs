@@ -241,6 +241,7 @@ unsafe impl ArrayComponentData for cgmath::Vector3<f32> {
 
 pub unsafe trait BufferData { }
 
+unsafe impl BufferData for f32 { }
 unsafe impl BufferData for u32 { }
 
 unsafe impl BufferData for cgmath::Rad<f32> { }

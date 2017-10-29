@@ -29,7 +29,7 @@ monster_set! {
     },
 
     graphics {
-        model: Obj::read(include_str!(concat!(env!("OUT_DIR"), "/world/monster/catalog/spider/graphics/spider.obj"))).unwrap(),
+        model: Obj::read(include_str!(concat!(env!("OUT_DIR"), "/world/monster/spider/graphics/spider.obj"))).unwrap(),
 
         vertex_shader:   include_bytes!("graphics/spider.vert"),
         fragment_shader: include_bytes!("graphics/spider.frag"),

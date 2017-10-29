@@ -59,10 +59,12 @@ fn main() {
     let mut world = caper::world::World::new();
     world.map.sectors.insert(cgmath::Vector2::new( 0,  0), caper::world::map::Sector::new());
     world.map.sectors.insert(cgmath::Vector2::new(-1,  0), caper::world::map::Sector::new());
-    world.spiders.spawn(&mut rng, cgmath::Vector2::new( 0.0,  0.0));
     world.spiders.spawn(&mut rng, cgmath::Vector2::new( 1.0,  1.0));
     world.spiders.spawn(&mut rng, cgmath::Vector2::new( 2.0,  2.0));
     world.spiders.spawn(&mut rng, cgmath::Vector2::new( 3.0,  3.0));
+    world.gas_spores.spawn(&mut rng, cgmath::Vector2::new(-1.0,  1.0));
+    world.gas_spores.spawn(&mut rng, cgmath::Vector2::new(-2.0,  2.0));
+    world.gas_spores.spawn(&mut rng, cgmath::Vector2::new(-3.0,  3.0));
 
     let mut previous_simulation = time::precise_time_ns();
     let mut running = true;
