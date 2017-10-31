@@ -3,6 +3,7 @@
 extern crate cgmath;
 extern crate gl;
 extern crate glutin;
+extern crate png;
 extern crate rand;
 
 #[macro_use] mod macros;

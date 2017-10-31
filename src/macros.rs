@@ -1,3 +1,122 @@
+#[doc(hidden)]
+pub trait MakeId {
+    fn make_id(id: usize) -> Self;
+}
+
+#[doc(hidden)]
+pub fn make_id<T: MakeId>(id: usize) -> T {
+    T::make_id(id)
+}
+
+#[macro_export]
+macro_rules! soa_spawn {
+    { $self:expr, $($name:ident : $value:expr,)* } => {{
+        let this = $self;
+
+        let id = $crate::macros::make_id(this.next_id);
+        this.next_id += 1;
+
+        let index = this.ids_by_index.len();
+        this.indices_by_id.insert(id, index);
+        this.ids_by_index.push(id);
+
+        $(this.arrays.$name.push($value);)*
+
+        id
+    }};
+}
+
+#[macro_export]
+macro_rules! soa {
+    {
+        $name:ident,
+
+        $id:ident,
+
+        $(array $array_name:ident : $array_type:ty,)*
+
+        $(scalar $scalar_name:ident : $scalar_type:ty = $scalar_initial:expr,)*
+    } => {
+        #[derive(Debug)]
+        pub struct $name {
+            next_id: usize,
+            indices_by_id: $crate::std::collections::HashMap<$id, usize>,
+            ids_by_index: Vec<$id>,
+            #[doc(hidden)] pub arrays: arrays::Arrays,
+            pub scalars: scalars::Scalars,
+        }
+
+        #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+        pub struct $id(usize);
+
+        impl $crate::macros::MakeId for $id {
+            fn make_id(id: usize) -> Self {
+                $id(id)
+            }
+        }
+
+        impl $name {
+            pub fn new() -> Self {
+                $name{
+                    next_id: 0,
+                    indices_by_id: $crate::std::collections::HashMap::new(),
+                    ids_by_index: Vec::new(),
+                    arrays: arrays::Arrays::new(),
+                    scalars: scalars::Scalars::new(),
+                }
+            }
+
+            pub fn size(&self) -> usize {
+                self.ids_by_index.len()
+            }
+
+            pub fn ids(&self) -> &[$id] {
+                &self.ids_by_index
+            }
+
+            pub fn despawn(&mut self, id: $id) {
+                let &index = self.indices_by_id.get(&id).unwrap();
+                let &last_id = self.ids_by_index.last().unwrap();
+                self.ids_by_index.swap_remove(index);
+                self.indices_by_id.insert(last_id, index);
+                $(self.arrays.$array_name.swap_remove(index);)*
+            }
+        }
+
+        mod arrays {
+            #[allow(unused_imports)]
+            use super::*;
+
+            #[derive(Debug)]
+            pub struct Arrays {
+                $(pub $array_name: Vec<$array_type>,)*
+            }
+
+            impl Arrays {
+                pub fn new() -> Self {
+                    Arrays{$($array_name: Vec::new(),)*}
+                }
+            }
+        }
+
+        pub mod scalars {
+            #[allow(unused_imports)]
+            use super::*;
+
+            #[derive(Debug)]
+            pub struct Scalars {
+                $(pub $scalar_name: $scalar_type,)*
+            }
+
+            impl Scalars {
+                pub fn new() -> Self {
+                    Scalars{$($scalar_name: $scalar_initial,)*}
+                }
+            }
+        }
+    };
+}
+
 #[macro_export]
 macro_rules! monster_set {
     {
@@ -22,114 +141,51 @@ macro_rules! monster_set {
             fragment_shader : $fragment_shader:expr,
         },
     } => {
-        #[derive(Debug)]
-        pub struct $name {
-            next_id: usize,
-            indices_by_id: $crate::std::collections::HashMap<$id, usize>,
-            ids_by_index: Vec<$id>,
-            #[doc(hidden)] pub monsters: monsters::Monsters,
-            pub state: state::State,
-            graphics: graphics::Graphics,
-        }
+        soa! {
+            $name,
 
-        #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-        pub struct $id(usize);
+            $id,
 
-        impl $name {
-            pub fn new() -> Self {
-                $name{
-                    next_id: 0,
-                    indices_by_id: $crate::std::collections::HashMap::new(),
-                    ids_by_index: Vec::new(),
-                    monsters: monsters::Monsters::new(),
-                    state: state::State::new(),
-                    graphics: graphics::Graphics::new(),
-                }
-            }
+            $(array $attribute_name: $attribute_type,)*
+            $(array $visible_name: $visible_type,)*
+
+            $(scalar $state_name: $state_type = $state_initial,)*
+            scalar graphics: graphics::Graphics = graphics::Graphics::new(),
         }
 
         impl $crate::world::monster::MonsterSet for $name {
             type Id = $id;
 
             fn ids(&self) -> &[$id] {
-                &self.ids_by_index
+                self.ids()
             }
 
             fn positions(&self) -> &[$crate::cgmath::Vector2<f32>] {
-                &self.monsters.positions
+                &self.arrays.positions
             }
 
             fn healths(&self) -> &[f32] {
-                &self.monsters.healths
+                &self.arrays.healths
             }
 
             fn spawn<R>(&mut self, $spawn_rng: &mut R,
                         $spawn_position: $crate::cgmath::Vector2<f32>) -> $id
                 where R: $crate::rand::Rng {
-                let id = $id(self.next_id);
-                self.next_id += 1;
-
-                let index = self.ids_by_index.len();
-                self.indices_by_id.insert(id, index);
-                self.ids_by_index.push(id);
-
-                $(self.monsters.$spawn_attribute_name.push($spawn_attribute_value);)*
-
-                id
+                soa_spawn! {
+                    self,
+                    $($spawn_attribute_name : $spawn_attribute_value,)*
+                }
             }
 
             fn despawn(&mut self, id: $id) {
-                let &index = self.indices_by_id.get(&id).unwrap();
-                let &last_id = self.ids_by_index.last().unwrap();
-                self.ids_by_index.swap_remove(index);
-                self.indices_by_id.insert(last_id, index);
-                $(self.monsters.$attribute_name.swap_remove(index);)*
-                $(self.monsters.$visible_name.swap_remove(index);)*
+                self.despawn(id);
             }
 
             fn draw(&self, pmat: $crate::cgmath::Matrix4<f32>,
                     vmat: $crate::cgmath::Matrix4<f32>,
                     mmat: $crate::cgmath::Matrix4<f32>,
                     light_position: $crate::cgmath::Vector2<f32>) {
-                self.graphics.draw(self, pmat, vmat, mmat, light_position);
-            }
-        }
-
-        mod monsters {
-            #[allow(unused_imports)]
-            use super::*;
-
-            #[derive(Debug)]
-            pub struct Monsters {
-                $(pub $attribute_name: Vec<$attribute_type>,)*
-                $(pub $visible_name: Vec<$visible_type>,)*
-            }
-
-            impl Monsters {
-                pub fn new() -> Self {
-                    Monsters{
-                        $($attribute_name: Vec::new(),)*
-                        $($visible_name: Vec::new(),)*
-                    }
-                }
-            }
-        }
-
-        pub mod state {
-            #[allow(unused_imports)]
-            use super::*;
-
-            #[derive(Debug)]
-            pub struct State {
-                $(pub $state_name: $state_type,)*
-            }
-
-            impl State {
-                pub fn new() -> Self {
-                    State{
-                        $($state_name: $state_initial,)*
-                    }
-                }
+                self.scalars.graphics.draw(self, pmat, vmat, mmat, light_position);
             }
         }
 
@@ -138,7 +194,6 @@ macro_rules! monster_set {
             use super::*;
 
             use $crate::graphics::gl;
-            use $crate::world::monster::MonsterSet;
 
             #[derive(Debug)]
             pub struct Graphics {
@@ -241,7 +296,7 @@ macro_rules! monster_set {
 
                     $({
                         gl::named_buffer_data(&self.$visible_name,
-                                              monster_field!(monster_set, $visible_name),
+                                              soa_array!(monster_set, $visible_name),
                                               gl::DataStoreUsage::StreamDraw);
                     })*
 
@@ -267,11 +322,11 @@ macro_rules! monster_set {
 }
 
 #[macro_export]
-macro_rules! monster_field {
+macro_rules! soa_array {
     ($self:expr, $field:ident) => {
-        &$self.monsters.$field[..]
+        &$self.arrays.$field[..]
     };
     ($self:expr, mut $field:ident) => {
-        &mut $self.monsters.$field[..]
+        &mut $self.arrays.$field[..]
     };
 }

@@ -10,6 +10,8 @@ const CAMERA_DEAD_ZONE_W: f32 = 4.5;
 const CAMERA_DEAD_ZONE_E: f32 = 4.5;
 
 pub fn simulate<R: Rng>(world: &mut World, input: &Input, rng: &mut R, dt: f32) {
+    damage_indicator::simulate(&mut world.damage_indicators, dt);
+
     player::simulate(world, input, dt);
 
     spider::simulate(&mut world.spiders, rng, dt);
@@ -30,6 +32,9 @@ pub fn simulate<R: Rng>(world: &mut World, input: &Input, rng: &mut R, dt: f32) 
     }
 }
 
+pub mod damage_indicator;
+
 pub mod player;
+
 pub mod spider;
 pub mod gas_spore;

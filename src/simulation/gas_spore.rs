@@ -9,7 +9,7 @@ pub fn simulate<R: Rng>(gas_spores: &mut GasSporeSet, _rng: &mut R, dt: f32) {
 }
 
 fn simulate_altitude_arcsins(gas_spores: &mut GasSporeSet, dt: f32) {
-    let altitude_arcsins = monster_field!(gas_spores, mut altitude_arcsins).iter_mut();
+    let altitude_arcsins = soa_array!(gas_spores, mut altitude_arcsins).iter_mut();
     for altitude_arcsin in altitude_arcsins {
         *altitude_arcsin = simulate_altitude_arcsin(*altitude_arcsin, dt);
     }

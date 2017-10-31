@@ -16,6 +16,7 @@ pub fn make_program(vertex_shader_source: &[u8],
     let frag_shader = gl::Shader::new(gl::ShaderType::FragmentShader);
     gl::shader_source(&frag_shader, &[
         &b"#version 330 core\n"[..],
+        &b"#extension GL_ARB_explicit_uniform_location : require\n"[..],
         fragment::LIGHTING,
         fragment_shader_source,
     ]);

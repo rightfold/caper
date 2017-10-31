@@ -40,7 +40,9 @@ fn main() {
     unsafe {
         gl::load_with(|symbol| window.get_proc_address(symbol) as *const c_void);
         window.make_current().unwrap();
+        gl::Enable(gl::BLEND);
         gl::Enable(gl::DEPTH_TEST);
+        gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
     }
 
     unsafe {

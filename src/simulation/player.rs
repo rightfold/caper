@@ -45,14 +45,17 @@ fn simulate_attack_state(world: &mut World, input: &Input, dt: f32) {
 }
 
 fn simulate_attack(world: &mut World) {
-    let velocities = monster_field!(world.spiders, mut velocities).iter_mut();
-    let positions  = monster_field!(world.spiders, positions).iter();
-    let healths    = monster_field!(world.spiders, mut healths).iter_mut();
+    let velocities = soa_array!(world.spiders, mut velocities).iter_mut();
+    let positions  = soa_array!(world.spiders, positions).iter();
+    let healths    = soa_array!(world.spiders, mut healths).iter_mut();
     for (velocity, (position, health)) in velocities.zip(positions.zip(healths)) {
         if world.player.position.distance(*position) < ATTACK_RANGE {
+            let damage = ATTACK_DAMAGE;
+            *health -= damage;
+            world.damage_indicators.spawn(*position, damage);
+
             *velocity += (*position - world.player.position)
                 .normalize_to(ATTACK_KNOCK_BACK);
-            *health -= ATTACK_DAMAGE;
         }
     }
 }

@@ -6,6 +6,8 @@ use world::monster::MonsterSet;
 pub struct World {
     pub map: map::Map,
 
+    pub damage_indicators: effect::damage_indicator::DamageIndicatorSet,
+
     pub player: player::Player,
 
     pub spiders: monster::spider::SpiderSet,
@@ -18,6 +20,8 @@ impl World {
     pub fn new() -> Self {
         World{
             map: map::Map::new(),
+
+            damage_indicators: effect::damage_indicator::DamageIndicatorSet::new(),
 
             player: player::Player::new(Vector2::new(0.0, 0.0)),
 
@@ -41,6 +45,8 @@ impl World {
 
         self.map.draw(pmat, vmat, mmat, light_position);
 
+        self.damage_indicators.draw(pmat, vmat, mmat);
+
         self.player.draw(pmat, vmat, mmat, light_position);
 
         self.spiders.draw(pmat, vmat, mmat, light_position);
@@ -48,6 +54,7 @@ impl World {
     }
 }
 
+pub mod effect;
 pub mod item;
 pub mod map;
 pub mod monster;
