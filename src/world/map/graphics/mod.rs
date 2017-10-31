@@ -34,13 +34,11 @@ impl Graphics {
         gl::bind_vertex_array(&vertex_array);
 
         gl::enable_vertex_attrib_array(0);
-        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer,
-                        &vertex_position_buffer);
+        gl::bind_buffer(gl::BufferTarget::ArrayBuffer, &vertex_position_buffer);
         gl::vertex_attrib_pointer::<Vector2<f32>>(0, false);
 
         gl::enable_vertex_attrib_array(1);
-        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer,
-                        &tile_material_buffer);
+        gl::bind_buffer(gl::BufferTarget::ArrayBuffer, &tile_material_buffer);
         gl::vertex_attrib_i_pointer::<Material>(1);
         gl::vertex_attrib_divisor(1, 1);
 

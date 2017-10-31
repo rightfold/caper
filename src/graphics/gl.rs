@@ -46,7 +46,7 @@ impl<T> !Send for Buffer<T> { }
 
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum BufferBindingTarget {
+pub enum BufferTarget {
     ArrayBuffer = gl::ARRAY_BUFFER as isize,
     ElementArrayBuffer = gl::ELEMENT_ARRAY_BUFFER as isize,
 }
@@ -151,13 +151,76 @@ pub enum ShaderType {
 
 
 #[derive(Debug)]
+pub struct Texture(gl::types::GLuint);
+
+impl Texture {
+    pub fn new(target: TextureTarget) -> Self {
+        unsafe {
+            let mut handle = mem::uninitialized();
+            gl::CreateTextures(target as gl::types::GLenum, 1, &mut handle);
+            Texture(handle)
+        }
+    }
+
+    pub fn handle(&self) -> gl::types::GLuint {
+        self.0
+    }
+}
+
+impl Drop for Texture {
+    fn drop(&mut self) {
+        unsafe {
+            gl::DeleteTextures(1, &self.0);
+        }
+    }
+}
+
+impl !Sync for Texture { }
+impl !Send for Texture { }
+
+
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum TextureDataType {
+    UnsignedByte = gl::UNSIGNED_BYTE as isize,
+}
+
+
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum TextureInternalFormat {
+    RGBA = gl::RGBA as isize,
+}
+
+
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum TextureFormat {
+    RGBA = gl::RGBA as isize,
+}
+
+
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum TextureTarget {
+    Texture2D = gl::TEXTURE_2D as isize,
+}
+
+
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct TextureUnit(pub usize);
+
+
+
+#[derive(Debug)]
 pub struct VertexArray(gl::types::GLuint);
 
 impl VertexArray {
     pub fn new() -> Self {
         unsafe {
             let mut handle = mem::uninitialized();
-            gl::GenVertexArrays(1, &mut handle);
+            gl::CreateVertexArrays(1, &mut handle);
             VertexArray(handle)
         }
     }
@@ -266,6 +329,14 @@ pub trait Uniform {
     fn uniform(self, location: usize);
 }
 
+impl Uniform for TextureUnit {
+    fn uniform(self, location: usize) {
+        unsafe {
+            gl::Uniform1i(location as gl::types::GLint, self.0 as i32);
+        }
+    }
+}
+
 impl Uniform for cgmath::Vector2<i32> {
     fn uniform(self, location: usize) {
         unsafe {
@@ -296,32 +367,33 @@ impl Uniform for cgmath::Matrix4<f32> {
 
 
 
+pub fn active_texture(texture: TextureUnit) {
+    unsafe {
+        gl::ActiveTexture(gl::TEXTURE0 + texture.0 as gl::types::GLenum);
+    }
+}
+
 pub fn attach_shader(program: &Program, shader: &Shader) {
     unsafe {
         gl::AttachShader(program.handle(), shader.handle());
     }
 }
 
-pub fn bind_buffer<T>(target: BufferBindingTarget, buffer: &Buffer<T>) {
+pub fn bind_buffer<T>(target: BufferTarget, buffer: &Buffer<T>) {
     unsafe {
         gl::BindBuffer(target as gl::types::GLenum, buffer.handle());
+    }
+}
+
+pub fn bind_texture(target: TextureTarget, texture: &Texture) {
+    unsafe {
+        gl::BindTexture(target as gl::types::GLenum, texture.handle());
     }
 }
 
 pub fn bind_vertex_array(vertex_array: &VertexArray) {
     unsafe {
         gl::BindVertexArray(vertex_array.handle());
-    }
-}
-
-pub fn named_buffer_data<T>(buffer: &Buffer<T>, data: &[T], usage: DataStoreUsage)
-    where T: BufferData {
-    unsafe {
-        let data_size = (mem::size_of::<T>() * data.len()) as isize;
-        let data_ptr = data.as_ptr() as *const c_void;
-        gl::NamedBufferData(buffer.handle(),
-                            data_size, data_ptr,
-                            usage as gl::types::GLenum);
     }
 }
 
@@ -375,9 +447,26 @@ pub fn enable_vertex_attrib_array(index: usize) {
     }
 }
 
+pub fn generate_mipmap(target: TextureTarget) {
+    unsafe {
+        gl::GenerateMipmap(target as gl::types::GLenum);
+    }
+}
+
 pub fn link_program(program: &Program) {
     unsafe {
         gl::LinkProgram(program.handle());
+    }
+}
+
+pub fn named_buffer_data<T>(buffer: &Buffer<T>, data: &[T], usage: DataStoreUsage)
+    where T: BufferData {
+    unsafe {
+        let data_size = (mem::size_of::<T>() * data.len()) as isize;
+        let data_ptr = data.as_ptr() as *const c_void;
+        gl::NamedBufferData(buffer.handle(),
+                            data_size, data_ptr,
+                            usage as gl::types::GLenum);
     }
 }
 
@@ -393,6 +482,21 @@ pub fn shader_source<I>(shader: &Shader, sources: I)
         gl::ShaderSource(shader.handle(), strings.len() as gl::types::GLsizei,
                          strings.as_ptr(), lengths.as_ptr());
     }
+}
+
+pub unsafe fn tex_image_2d(target: TextureTarget, level: usize,
+                           internal_format: TextureInternalFormat, width: usize,
+                           height: usize, format: TextureFormat,
+                           data_type: TextureDataType, data: &[u8]) {
+    gl::TexImage2D(target as gl::types::GLenum,
+                   level as gl::types::GLint,
+                   internal_format as gl::types::GLint,
+                   width as gl::types::GLsizei,
+                   height as gl::types::GLsizei,
+                   0,
+                   format as gl::types::GLenum,
+                   data_type as gl::types::GLenum,
+                   data.as_ptr() as *const c_void);
 }
 
 pub fn uniform<T>(location: usize, value: T)

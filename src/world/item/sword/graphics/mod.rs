@@ -40,12 +40,12 @@ impl Graphics {
         gl::bind_vertex_array(&vertex_array);
 
         gl::enable_vertex_attrib_array(0);
-        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer,
+        gl::bind_buffer(gl::BufferTarget::ArrayBuffer,
                         &vertex_position_buffer);
         gl::vertex_attrib_pointer::<Vector3<f32>>(0, false);
 
         gl::enable_vertex_attrib_array(1);
-        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer,
+        gl::bind_buffer(gl::BufferTarget::ArrayBuffer,
                         &vertex_normal_buffer);
         gl::vertex_attrib_pointer::<Vector3<f32>>(1, false);
 
@@ -66,7 +66,7 @@ impl Graphics {
                 mmat: Matrix4<f32>, light_position: Vector2<f32>) {
         gl::bind_vertex_array(&self.vertex_array);
 
-        gl::bind_buffer(gl::BufferBindingTarget::ElementArrayBuffer,
+        gl::bind_buffer(gl::BufferTarget::ElementArrayBuffer,
                         &self.vertex_index_buffer);
 
         gl::draw_buffer(gl::ColorBuffer::Back);

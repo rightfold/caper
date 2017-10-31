@@ -215,16 +215,16 @@ macro_rules! monster_set {
                     gl::bind_vertex_array(&vertex_array);
 
                     gl::enable_vertex_attrib_array(0);
-                    gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer, vertex_position_buffer);
+                    gl::bind_buffer(gl::BufferTarget::ArrayBuffer, vertex_position_buffer);
                     gl::vertex_attrib_pointer::<$crate::cgmath::Vector3<f32>>(0, false);
 
                     gl::enable_vertex_attrib_array(1);
-                    gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer, vertex_normal_buffer);
+                    gl::bind_buffer(gl::BufferTarget::ArrayBuffer, vertex_normal_buffer);
                     gl::vertex_attrib_pointer::<$crate::cgmath::Vector3<f32>>(1, false);
 
                     $({
                         gl::enable_vertex_attrib_array($visible_location);
-                        gl::bind_buffer(gl::BufferBindingTarget::ArrayBuffer, $visible_name);
+                        gl::bind_buffer(gl::BufferTarget::ArrayBuffer, $visible_name);
                         gl::vertex_attrib_pointer::<$visible_type>($visible_location, false);
                         gl::vertex_attrib_divisor($visible_location, 1);
                     })*
@@ -245,7 +245,7 @@ macro_rules! monster_set {
                                               gl::DataStoreUsage::StreamDraw);
                     })*
 
-                    gl::bind_buffer(gl::BufferBindingTarget::ElementArrayBuffer,
+                    gl::bind_buffer(gl::BufferTarget::ElementArrayBuffer,
                                     &self.vertex_index_buffer);
 
                     gl::draw_buffer(gl::ColorBuffer::Back);
