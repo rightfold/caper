@@ -4,10 +4,11 @@ use input::Input;
 use world::World;
 use world::player::*;
 
-const MOVEMENT_SPEED: f32 = 0.004;
-const ATTACK_SPEED: f32 = 0.005;
+const MOVEMENT_SPEED: f32 = 4.0;
+const ATTACK_SPEED: f32 = 5.0;
 const ATTACK_DAMAGE: f32 = 4.0;
 const ATTACK_RANGE: f32 = 1.0;
+const ATTACK_KNOCK_BACK: f32 = 3.0;
 
 pub fn simulate(world: &mut World, input: &Input, dt: f32) {
     simulate_move(&mut world.player, input, dt);
@@ -44,10 +45,13 @@ fn simulate_attack_state(world: &mut World, input: &Input, dt: f32) {
 }
 
 fn simulate_attack(world: &mut World) {
-    let positions = monster_field!(world.spiders, positions).iter();
-    let healths = monster_field!(world.spiders, mut healths).iter_mut();
-    for (&position, health) in positions.zip(healths) {
-        if world.player.position.distance(position) < ATTACK_RANGE {
+    let velocities = monster_field!(world.spiders, mut velocities).iter_mut();
+    let positions  = monster_field!(world.spiders, positions).iter();
+    let healths    = monster_field!(world.spiders, mut healths).iter_mut();
+    for (velocity, (position, health)) in velocities.zip(positions.zip(healths)) {
+        if world.player.position.distance(*position) < ATTACK_RANGE {
+            *velocity += (*position - world.player.position)
+                .normalize_to(ATTACK_KNOCK_BACK);
             *health -= ATTACK_DAMAGE;
         }
     }

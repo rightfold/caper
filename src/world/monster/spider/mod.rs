@@ -1,4 +1,4 @@
-use cgmath::{Rad, Vector2};
+use cgmath::{Rad, Vector2, Zero};
 
 use chance::gen_range_base;
 use graphics::obj::Obj;
@@ -12,6 +12,7 @@ monster_set! {
 
     SpiderId,
 
+    attribute velocities: Vector2<f32>,
     attribute targets: Vector2<f32>,
     attribute healths: f32,
 
@@ -21,6 +22,8 @@ monster_set! {
     state since_target_changes: Since = Since::new(),
 
     spawn(rng, position) {
+        velocities: Vector2::zero(),
+
         targets: rng.gen(),
         healths: gen_range_base(rng, INITIAL_HEALTH_BASE, INITIAL_HEALTH_CHANCE),
 

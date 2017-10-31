@@ -2,7 +2,7 @@ use rand::Rng;
 
 use world::monster::gas_spore::*;
 
-const ALTITUDE_CHANGE_SPEED: f32 = 0.0006;
+const ALTITUDE_CHANGE_SPEED: f32 = 0.6;
 
 pub fn simulate<R: Rng>(gas_spores: &mut GasSporeSet, _rng: &mut R, dt: f32) {
     simulate_altitude_arcsins(gas_spores, dt);

@@ -104,7 +104,7 @@ fn main() {
         );
 
         let current_simulation = time::precise_time_ns();
-        let dt = (current_simulation - previous_simulation) as f32 / 1000000.0;
+        let dt = (current_simulation - previous_simulation) as f32 / 1000000000.0;
         previous_simulation = current_simulation;
 
         for mouse_input in mouse_inputs.iter() {
