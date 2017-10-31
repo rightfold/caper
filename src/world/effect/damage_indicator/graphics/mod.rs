@@ -94,10 +94,10 @@ impl Graphics {
         unsafe {
             raw_gl::TextureParameteri(texture.handle(),
                                       raw_gl::TEXTURE_MIN_FILTER,
-                                      raw_gl::LINEAR as raw_gl::types::GLint);
+                                      raw_gl::NEAREST as raw_gl::types::GLint);
             raw_gl::TextureParameteri(texture.handle(),
                                       raw_gl::TEXTURE_MAG_FILTER,
-                                      raw_gl::LINEAR as raw_gl::types::GLint);
+                                      raw_gl::NEAREST as raw_gl::types::GLint);
         }
         unsafe {
             gl::tex_image_2d(gl::TextureTarget::Texture2D, 0,
