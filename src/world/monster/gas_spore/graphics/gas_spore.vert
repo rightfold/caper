@@ -1,6 +1,9 @@
 #define LIGHT_HEIGHT 1.5
 #define LIGHT_INTENSITY 2.0
 
+#define BASE_ALTITUDE 0.5
+#define ALTITUDE_FACTOR 0.3
+
 layout(location = 0) in vec3 vertex_position;
 layout(location = 1) in vec3 vertex_normal;
 layout(location = 2) in vec2 model_position;
@@ -15,7 +18,8 @@ layout(location = 3) uniform vec2 light_position;
 out float brightness;
 
 void main() {
-  float model_altitude = 1.0 + 0.3 * sin(model_altitude_arcsin);
+  float model_altitude =
+    BASE_ALTITUDE + ALTITUDE_FACTOR * sin(model_altitude_arcsin);
 
   mat4 mmmat = mat4(vec4( cos(model_angle), sin(model_angle),            0.0, 0.0),
                     vec4(-sin(model_angle), cos(model_angle),            0.0, 0.0),
