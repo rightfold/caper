@@ -2,6 +2,7 @@ use cgmath::{Rad, Vector2};
 
 use chance::gen_range_base;
 use graphics::obj::Obj;
+use world::monster::Mortal;
 
 const INITIAL_HEALTH_BASE: f32 = 10.0;
 const INITIAL_HEALTH_CHANCE: (f32, f32) = (-3.0, 5.0);
@@ -31,4 +32,10 @@ monster_set! {
         vertex_shader:   include_bytes!("graphics/gas_spore.vert"),
         fragment_shader: include_bytes!("graphics/gas_spore.frag"),
     },
+}
+
+impl Mortal for GasSporeSet {
+    fn healths(&self) -> &[f32] {
+        soa_array!(self, healths)
+    }
 }

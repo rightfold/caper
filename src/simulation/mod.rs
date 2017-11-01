@@ -2,7 +2,6 @@ use rand::Rng;
 
 use input::Input;
 use world::World;
-use world::monster;
 
 const CAMERA_DEAD_ZONE_N: f32 = 3.0;
 const CAMERA_DEAD_ZONE_S: f32 = 1.5;
@@ -10,12 +9,12 @@ const CAMERA_DEAD_ZONE_W: f32 = 4.5;
 const CAMERA_DEAD_ZONE_E: f32 = 4.5;
 
 pub fn simulate<R: Rng>(world: &mut World, input: &Input, rng: &mut R, dt: f32) {
-    damage_indicator::simulate(&mut world.damage_indicators, dt);
+    effect::damage_indicator::simulate(&mut world.damage_indicators, dt);
 
     player::simulate(world, input, rng, dt);
 
-    spider::simulate(&mut world.spiders, rng, dt);
-    gas_spore::simulate(&mut world.gas_spores, rng, dt);
+    monster::gas_spore::simulate(&mut world.gas_spores, rng, dt);
+    monster::spider::simulate(&mut world.spiders, rng, dt);
 
     monster::despawn_dead(&mut world.spiders);
     monster::despawn_dead(&mut world.gas_spores);
@@ -32,9 +31,10 @@ pub fn simulate<R: Rng>(world: &mut World, input: &Input, rng: &mut R, dt: f32) 
     }
 }
 
-pub mod damage_indicator;
+pub mod effect;
 
 pub mod player;
 
-pub mod spider;
-pub mod gas_spore;
+pub mod monster;
+
+pub mod wander;

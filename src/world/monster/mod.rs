@@ -5,8 +5,6 @@ pub trait MonsterSet {
     type Id: Copy;
 
     fn ids(&self) -> &[Self::Id];
-    fn positions(&self) -> &[Vector2<f32>];
-    fn healths(&self) -> &[f32];
 
     fn spawn<R: Rng>(&mut self, rng: &mut R,
                      position: Vector2<f32>) -> Self::Id;
@@ -16,18 +14,8 @@ pub trait MonsterSet {
             light_position: Vector2<f32>);
 }
 
-pub fn despawn_dead<M: MonsterSet>(monsters: &mut M) {
-    let dead = {
-        let ids = monsters.ids().iter();
-        let healths = monsters.healths().iter();
-        ids.zip(healths)
-            .filter(|&(_, &health)| health < 0.0)
-            .map(|(&id, _)| id)
-            .collect::<Vec<_>>()
-    };
-    for dead in dead {
-        monsters.despawn(dead);
-    }
+pub trait Mortal {
+    fn healths(&self) -> &[f32];
 }
 
 pub mod gas_spore;

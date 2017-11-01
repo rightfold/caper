@@ -160,14 +160,6 @@ macro_rules! monster_set {
                 self.ids()
             }
 
-            fn positions(&self) -> &[$crate::cgmath::Vector2<f32>] {
-                &self.arrays.positions
-            }
-
-            fn healths(&self) -> &[f32] {
-                &self.arrays.healths
-            }
-
             fn spawn<R>(&mut self, $spawn_rng: &mut R,
                         $spawn_position: $crate::cgmath::Vector2<f32>) -> $id
                 where R: $crate::rand::Rng {

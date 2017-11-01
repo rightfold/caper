@@ -2,6 +2,7 @@ use cgmath::{Rad, Vector2, Zero};
 
 use chance::gen_range_base;
 use graphics::obj::Obj;
+use world::monster::Mortal;
 use timing::Since;
 
 const INITIAL_HEALTH_BASE: f32 = 20.0;
@@ -37,4 +38,10 @@ monster_set! {
         vertex_shader:   include_bytes!("graphics/spider.vert"),
         fragment_shader: include_bytes!("graphics/spider.frag"),
     },
+}
+
+impl Mortal for SpiderSet {
+    fn healths(&self) -> &[f32] {
+        soa_array!(self, healths)
+    }
 }
