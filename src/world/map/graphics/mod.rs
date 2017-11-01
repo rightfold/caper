@@ -13,6 +13,7 @@ pub struct Graphics {
     vertex_count: usize,
     _vertex_position_buffer: gl::Buffer<Vector2<f32>>,
     tile_material_buffer: gl::Buffer<Material>,
+    tile_elevation_buffer: gl::Buffer<u8>,
 }
 
 impl Graphics {
@@ -29,6 +30,8 @@ impl Graphics {
 
         let tile_material_buffer = gl::Buffer::new();
 
+        let tile_elevation_buffer = gl::Buffer::new();
+
         let vertex_array = gl::VertexArray::new();
 
         gl::bind_vertex_array(&vertex_array);
@@ -42,9 +45,14 @@ impl Graphics {
         gl::vertex_attrib_i_pointer::<Material>(1);
         gl::vertex_attrib_divisor(1, 1);
 
+        gl::enable_vertex_attrib_array(2);
+        gl::bind_buffer(gl::BufferTarget::ArrayBuffer, &tile_elevation_buffer);
+        gl::vertex_attrib_i_pointer::<u8>(2);
+        gl::vertex_attrib_divisor(2, 1);
+
         Graphics{program, vertex_array, vertex_count,
                  _vertex_position_buffer: vertex_position_buffer,
-                 tile_material_buffer}
+                 tile_material_buffer, tile_elevation_buffer}
     }
 
     fn generate_model() -> [Vector2<f32>; 8] {
@@ -52,7 +60,7 @@ impl Graphics {
         let mut vertex_positions = [Vector2::new(0.0, 0.0); 8];
         for i in 1 .. 7 {
             let (x, y) = (ANGLE * i as f32).sin_cos();
-            vertex_positions[i] = Vector2::new(0.9 * x, 0.9 * y);
+            vertex_positions[i] = Vector2::new(0.45 * x, 0.45 * y);
         }
         vertex_positions[7] = vertex_positions[1];
         vertex_positions
@@ -81,6 +89,10 @@ impl Graphics {
         for (&sector_id, sector) in map.sectors.iter() {
             gl::named_buffer_data(&self.tile_material_buffer,
                                   &sector.materials[..],
+                                  gl::DataStoreUsage::DynamicDraw);
+
+            gl::named_buffer_data(&self.tile_elevation_buffer,
+                                  &sector.elevations[..],
                                   gl::DataStoreUsage::DynamicDraw);
 
             gl::uniform(4, sector_id);

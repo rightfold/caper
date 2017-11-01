@@ -37,9 +37,15 @@ pub struct Sector {
 impl Sector {
     pub fn new() -> Self {
         let mut materials = [Material::Stone; SECTOR_SIZE * SECTOR_SIZE];
-        let elevations = [0; SECTOR_SIZE * SECTOR_SIZE];
-        for i in 0 .. SECTOR_SIZE {
+        let mut elevations = [0; SECTOR_SIZE * SECTOR_SIZE];
+        for i in 0 .. SECTOR_SIZE / 2 {
             materials[i] = Material::Grass;
+        }
+        for i in (SECTOR_SIZE / 2) .. SECTOR_SIZE {
+            materials[i] = Material::Sand;
+        }
+        for i in 0 .. SECTOR_SIZE / 2 {
+            elevations[SECTOR_SIZE + i] = 1;
         }
         Sector{materials, elevations}
     }
@@ -55,8 +61,9 @@ impl fmt::Debug for Sector {
 #[derive(Clone, Copy, Debug)]
 #[repr(u16)]
 pub enum Material {
-    Stone = 0x00,
-    Grass = 0x01,
+    Grass = 0x00,
+    Sand  = 0x01,
+    Stone = 0x02,
 }
 
 unsafe impl gl::ArrayComponentData for Material {
