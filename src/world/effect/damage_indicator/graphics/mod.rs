@@ -12,9 +12,10 @@ pub struct Graphics {
     vertex_array: gl::VertexArray,
     vertex_count: usize,
     _vertex_position_buffer: gl::Buffer<Vector2<f32>>,
-    vertex_texcoord_buffer: gl::Buffer<Vector2<f32>>,
+    _vertex_texcoord_buffer: gl::Buffer<Vector2<f32>>,
     positions_buffer: gl::Buffer<Vector2<f32>>,
     ages_buffer: gl::Buffer<f32>,
+    values_buffer: gl::Buffer<u8>,
     font_texture: gl::Texture,
 }
 
@@ -33,10 +34,26 @@ impl Graphics {
                               gl::DataStoreUsage::StaticDraw);
 
         let vertex_texcoord_buffer = gl::Buffer::new();
+        let texcoords = {
+            let (w, h) = (8.0 / 128.0, 9.0 / 128.0);
+            [
+                Vector2::new(  w, 0.0),
+                Vector2::new(0.0, 0.0),
+                Vector2::new(0.0,   h),
+
+                Vector2::new(0.0,   h),
+                Vector2::new(  w,   h),
+                Vector2::new(  w, 0.0),
+            ]
+        };
+        gl::named_buffer_data(&vertex_texcoord_buffer, &texcoords,
+                              gl::DataStoreUsage::StaticDraw);
 
         let positions_buffer = gl::Buffer::new();
 
         let ages_buffer = gl::Buffer::new();
+
+        let values_buffer = gl::Buffer::new();
 
         let vertex_array = gl::VertexArray::new();
 
@@ -62,12 +79,17 @@ impl Graphics {
         gl::vertex_attrib_pointer::<f32>(3, false);
         gl::vertex_attrib_divisor(3, 1);
 
+        gl::enable_vertex_attrib_array(4);
+        gl::bind_buffer(gl::BufferTarget::ArrayBuffer, &values_buffer);
+        gl::vertex_attrib_i_pointer::<u8>(4);
+        gl::vertex_attrib_divisor(4, 1);
+
         let font_texture = Self::make_font_texture();
 
         Graphics{program, vertex_array, vertex_count,
                  _vertex_position_buffer: vertex_position_buffer,
-                 vertex_texcoord_buffer, positions_buffer, ages_buffer,
-                 font_texture}
+                 _vertex_texcoord_buffer: vertex_texcoord_buffer,
+                 positions_buffer, ages_buffer, values_buffer, font_texture}
     }
 
     fn make_vertex_positions() -> [Vector2<f32>; 6] {
@@ -112,28 +134,13 @@ impl Graphics {
 
     pub fn draw(&self, damage_indicators: &DamageIndicatorSet,
                 pmat: Matrix4<f32>, vmat: Matrix4<f32>, mmat: Matrix4<f32>) {
+        if damage_indicators.size() == 0 {
+            return;
+        }
+
         gl::bind_vertex_array(&self.vertex_array);
 
         gl::draw_buffer(gl::ColorBuffer::Back);
-
-        // FIXME(rightfold): Recompute these only when the damage indicators
-        //                   change, instead of on every frame.
-        let mut texcoords = Vec::with_capacity(damage_indicators.size());
-        for _ in 0 .. damage_indicators.size() {
-            let (w, h) = (6.0 / 128.0, 9.0 / 128.0);
-
-            texcoords.extend(&[
-                Vector2::new(  w, 0.0),
-                Vector2::new(0.0, 0.0),
-                Vector2::new(0.0,   h),
-
-                Vector2::new(0.0,   h),
-                Vector2::new(  w,   h),
-                Vector2::new(  w, 0.0),
-            ]);
-        };
-        gl::named_buffer_data(&self.vertex_texcoord_buffer, &texcoords,
-                              gl::DataStoreUsage::DynamicDraw);
 
         gl::use_program(&self.program);
 
@@ -151,6 +158,10 @@ impl Graphics {
         gl::named_buffer_data(&self.ages_buffer,
                               soa_array!(damage_indicators, ages),
                               gl::DataStoreUsage::StreamDraw);
+
+        gl::named_buffer_data(&self.values_buffer,
+                              soa_array!(damage_indicators, values),
+                              gl::DataStoreUsage::DynamicDraw);
 
         gl::draw_arrays_instanced(gl::PrimitiveType::Triangles,
                                   self.vertex_count,

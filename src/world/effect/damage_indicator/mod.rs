@@ -7,16 +7,18 @@ soa! {
 
     array positions: Vector2<f32>,
     array ages: f32,
+    array values: u8,
 
     scalar graphics: graphics::Graphics = graphics::Graphics::new(),
 }
 
 impl DamageIndicatorSet {
-    pub fn spawn(&mut self, position: Vector2<f32>, _damage: f32) -> DamageIndicatorId {
+    pub fn spawn(&mut self, position: Vector2<f32>, damage: f32) -> DamageIndicatorId {
         soa_spawn! {
             self,
             positions: position,
             ages: 0.0,
+            values: damage.round() as u8,
         }
     }
 

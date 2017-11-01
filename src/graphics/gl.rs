@@ -9,6 +9,7 @@ use gl;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ArrayComponentDataType {
+    UnsignedByte = gl::UNSIGNED_BYTE as isize,
     UnsignedShort = gl::UNSIGNED_SHORT as isize,
     Float = gl::FLOAT as isize,
 }
@@ -252,6 +253,18 @@ pub unsafe trait ArrayComponentData {
     fn component_data_type() -> ArrayComponentDataType;
 }
 
+unsafe impl ArrayComponentData for u8 {
+    type Target = ArrayComponentDataTargetInteger;
+
+    fn component_count() -> usize {
+        1
+    }
+
+    fn component_data_type() -> ArrayComponentDataType {
+        ArrayComponentDataType::UnsignedByte
+    }
+}
+
 unsafe impl ArrayComponentData for f32 {
     type Target = ArrayComponentDataTargetFloat;
 
@@ -305,6 +318,7 @@ unsafe impl ArrayComponentData for cgmath::Vector3<f32> {
 pub unsafe trait BufferData { }
 
 unsafe impl BufferData for f32 { }
+unsafe impl BufferData for u8 { }
 unsafe impl BufferData for u32 { }
 
 unsafe impl BufferData for cgmath::Rad<f32> { }
