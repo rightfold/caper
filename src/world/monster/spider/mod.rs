@@ -24,7 +24,6 @@ monster_set! {
 
     spawn(rng, position) {
         velocities: Vector2::zero(),
-
         targets: rng.gen(),
         healths: gen_range_base(rng, INITIAL_HEALTH_BASE, INITIAL_HEALTH_CHANCE),
 

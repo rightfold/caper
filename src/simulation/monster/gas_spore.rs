@@ -1,10 +1,18 @@
 use rand::Rng;
 
+use simulation::wander;
 use world::monster::gas_spore::*;
 
 const ALTITUDE_CHANGE_SPEED: f32 = 0.6;
 
-pub fn simulate<R: Rng>(gas_spores: &mut GasSporeSet, _rng: &mut R, dt: f32) {
+pub fn simulate<R: Rng>(gas_spores: &mut GasSporeSet, rng: &mut R, dt: f32) {
+    wander::simulate_wander(rng, dt,
+                            &mut gas_spores.scalars.since_target_changes,
+                            soa_array!(gas_spores, mut angles),
+                            soa_array!(gas_spores, mut positions),
+                            soa_array!(gas_spores, mut targets),
+                            soa_array!(gas_spores, mut velocities));
+
     simulate_altitude_arcsins(gas_spores, dt);
 }
 

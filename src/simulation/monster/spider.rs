@@ -1,7 +1,7 @@
 use rand::Rng;
 
 use simulation::wander;
-use world::monster::spider::SpiderSet;
+use world::monster::spider::*;
 
 pub fn simulate<R: Rng>(spiders: &mut SpiderSet, rng: &mut R, dt: f32) {
     wander::simulate_wander(rng, dt, &mut spiders.scalars.since_target_changes,
